@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
 
 class Container_Carousel_Widget extends Container
 {
-    public function get_type(): string
+    public static function get_type(): string
     {
         return 'ecc_container_carousel';
     }
