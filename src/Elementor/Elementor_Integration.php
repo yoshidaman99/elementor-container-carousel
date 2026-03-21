@@ -10,38 +10,16 @@ class Elementor_Integration
 {
     public function register_widgets($widgets_manager): void
     {
-        error_log('[ECC] Elementor: ' . (defined('ELEMENTOR_VERSION') ? ELEMENTOR_VERSION : 'not loaded'));
-
-        $possible_classes = [
-            'Elementor\Widget_Container',
-            'Elementor\Element_Container',
-            'Elementor\Elements\Container',
-            'Elementor\Core\Elements\Container',
-            'Elementor\Modules\Container\Container',
-            'Elementor\Includes\Elements\Container',
-        ];
-        foreach ($possible_classes as $cls) {
-            if (class_exists($cls, true)) {
-                error_log('[ECC] FOUND: ' . $cls);
-                $parent = $cls;
-                while ($parent = get_parent_class($parent)) {
-                    error_log('[ECC]   extends: ' . $parent);
-                }
-                $ref = new \ReflectionClass($cls);
-                $methods = array_map(function ($m) { return $m->getName(); }, $ref->getMethods(\ReflectionMethod::IS_PUBLIC | \ReflectionMethod::IS_ABSTRACT));
-                error_log('[ECC]   public methods: ' . implode(', ', $methods));
-            }
-        }
-
-        error_log('[ECC] Widget_Container class NOT found - listing Elementor\\ classes with "container" in name');
-        foreach (get_declared_classes() as $cls) {
-            if (stripos($cls, 'Elementor') !== false && stripos($cls, 'container') !== false) {
-                error_log('[ECC]   ' . $cls);
-            }
-        }
-
         require_once ECC_DIR . 'src/Elementor/Widgets/Slides_Carousel_Widget.php';
         $widgets_manager->register(new Widgets\Slides_Carousel_Widget());
+    }
+
+    public function register_elements($elements_manager): void
+    {
+        if (class_exists('\Elementor\Includes\Elements\Container', true)) {
+            require_once ECC_DIR . 'src/Elementor/Widgets/Container_Carousel_Widget.php';
+            $elements_manager->register_element_type(new Widgets\Container_Carousel_Widget());
+        }
     }
 
     public static function register_styles(): void

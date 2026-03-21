@@ -2,7 +2,7 @@
 
 namespace Elementor_Container_Carousel\Elementor\Widgets;
 
-use Elementor\Widget_Container;
+use Elementor\Includes\Elements\Container;
 use Elementor\Controls_Manager;
 use Elementor\Group_Control_Typography;
 use Elementor\Group_Control_Border;
@@ -14,8 +14,13 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class Container_Carousel_Widget extends Widget_Container
+class Container_Carousel_Widget extends Container
 {
+    public function get_type(): string
+    {
+        return 'ecc_container_carousel';
+    }
+
     public function get_name(): string
     {
         return 'ecc_container_carousel';
