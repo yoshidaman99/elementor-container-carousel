@@ -10,14 +10,12 @@ class Elementor_Integration
 {
     public function register_widgets($widgets_manager): void
     {
-        if (!class_exists('\Elementor\Widget_Container')) {
-            return;
+        if (class_exists('\Elementor\Widget_Container')) {
+            require_once ECC_DIR . 'src/Elementor/Widgets/Container_Carousel_Widget.php';
+            $widgets_manager->register(new Widgets\Container_Carousel_Widget());
         }
 
-        require_once ECC_DIR . 'src/Elementor/Widgets/Container_Carousel_Widget.php';
         require_once ECC_DIR . 'src/Elementor/Widgets/Slides_Carousel_Widget.php';
-
-        $widgets_manager->register(new Widgets\Container_Carousel_Widget());
         $widgets_manager->register(new Widgets\Slides_Carousel_Widget());
     }
 
