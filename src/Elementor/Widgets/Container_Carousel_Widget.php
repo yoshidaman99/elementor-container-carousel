@@ -2,7 +2,7 @@
 
 namespace Elementor_Container_Carousel\Elementor\Widgets;
 
-use Elementor\Widget_Base;
+use Elementor\Widget_Container;
 use Elementor\Controls_Manager;
 use Elementor\Group_Control_Typography;
 use Elementor\Group_Control_Border;
@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class Container_Carousel_Widget extends Widget_Base
+class Container_Carousel_Widget extends Widget_Container
 {
     public function get_name(): string
     {
@@ -70,16 +70,6 @@ class Container_Carousel_Widget extends Widget_Base
         $this->start_controls_section('slides_section', [
             'label' => __('Slides', 'elementor-container-carousel'),
             'tab'   => Controls_Manager::TAB_CONTENT,
-        ]);
-
-        $this->add_control('slides_per_view', [
-            'label'       => __('Slides Per View', 'elementor-container-carousel'),
-            'type'        => Controls_Manager::NUMBER,
-            'default'     => 1,
-            'min'         => 1,
-            'max'         => 10,
-            'step'        => 1,
-            'description' => __('Number of slides visible at once.', 'elementor-container-carousel'),
         ]);
 
         $this->add_control('slides_per_group', [
@@ -849,7 +839,7 @@ class Container_Carousel_Widget extends Widget_Base
 
         ?>
         <div <?php echo $this->get_render_attribute_string('wrapper'); ?>>
-            <div class="swiper-wrapper ecc-slides-wrapper">
+            <div class="swiper-wrapper ecc-slides-wrapper ecc-slide-wrapper">
                 <?php
                 foreach ($this->get_children() as $child) {
                     $child->add_render_attribute('_wrapper', 'class', 'swiper-slide ecc-slide');
@@ -876,7 +866,7 @@ class Container_Carousel_Widget extends Widget_Base
     {
         ?>
         <div class="ecc-swiper-container swiper" data-swiper="" data-widget-id="{{ view.getID() }}">
-            <div class="swiper-wrapper ecc-slides-wrapper">
+            <div class="swiper-wrapper ecc-slides-wrapper ecc-slide-wrapper">
                 <slot></slot>
             </div>
             <# if (settings.show_pagination === 'yes') { #>

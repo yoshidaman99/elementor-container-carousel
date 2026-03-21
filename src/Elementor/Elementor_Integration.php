@@ -10,7 +10,7 @@ class Elementor_Integration
 {
     public function register_widgets($widgets_manager): void
     {
-        if (!class_exists('\Elementor\Widget_Base')) {
+        if (!class_exists('\Elementor\Widget_Container')) {
             return;
         }
 
