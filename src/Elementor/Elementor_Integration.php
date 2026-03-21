@@ -11,15 +11,10 @@ class Elementor_Integration
     public function register_widgets($widgets_manager): void
     {
         require_once ECC_DIR . 'src/Elementor/Widgets/Slides_Carousel_Widget.php';
-        $widgets_manager->register(new Widgets\Slides_Carousel_Widget());
-    }
+        require_once ECC_DIR . 'src/Elementor/Widgets/Container_Carousel_Widget.php';
 
-    public function register_elements($elements_manager): void
-    {
-        if (class_exists('\Elementor\Includes\Elements\Container', true)) {
-            require_once ECC_DIR . 'src/Elementor/Widgets/Container_Carousel_Widget.php';
-            $elements_manager->register_element_type(new Widgets\Container_Carousel_Widget());
-        }
+        $widgets_manager->register(new Widgets\Slides_Carousel_Widget());
+        $widgets_manager->register(new Widgets\Container_Carousel_Widget());
     }
 
     public static function register_styles(): void

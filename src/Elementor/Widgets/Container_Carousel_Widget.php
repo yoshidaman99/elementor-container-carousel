@@ -2,7 +2,7 @@
 
 namespace Elementor_Container_Carousel\Elementor\Widgets;
 
-use Elementor\Includes\Elements\Container;
+use Elementor\Widget_Base;
 use Elementor\Controls_Manager;
 use Elementor\Group_Control_Typography;
 use Elementor\Group_Control_Border;
@@ -14,13 +14,8 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class Container_Carousel_Widget extends Container
+class Container_Carousel_Widget extends Widget_Base
 {
-    public static function get_type(): string
-    {
-        return 'ecc_container_carousel';
-    }
-
     public function get_name(): string
     {
         return 'ecc_container_carousel';
@@ -46,20 +41,16 @@ class Container_Carousel_Widget extends Container
         return ['carousel', 'slider', 'container', 'swipe', 'yosh', 'tools'];
     }
 
-    public function get_container_type(): string
-    {
-        return 'flex';
-    }
-
     public function get_child_type(array $element_data): ?\Elementor\Element_Base
     {
-        $child_type = $element_data['elType'] ?? null;
-
-        if ('container' === $child_type) {
-            return \Elementor\Plugin::instance()->elements_manager->get_element_types('container');
-        }
-
         return \Elementor\Plugin::instance()->elements_manager->get_element_types('container');
+    }
+
+    public function get_default_children_elements(): array
+    {
+        return [
+            ['elType' => 'container'],
+        ];
     }
 
     public function get_style_depends(): array

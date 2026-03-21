@@ -3,7 +3,7 @@
  * Plugin Name: Elementor Container Carousel
  * Plugin URI: https://yosh.tools/elementor-container-carousel
  * Description: Transform any Elementor Container into a responsive carousel with Swiper.js. Two widgets: Container Wrapper and Repeater Slides.
- * Version: 1.1.4
+ * Version: 1.1.5
  * Author: Jerel Yoshida
  * Author URI: https://yosh.tools
  * Text Domain: elementor-container-carousel
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('ECC_VERSION', '1.1.4');
+define('ECC_VERSION', '1.1.5');
 define('ECC_FILE', __FILE__);
 define('ECC_DIR', plugin_dir_path(__FILE__));
 define('ECC_URL', plugin_dir_url(__FILE__));
