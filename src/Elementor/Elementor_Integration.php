@@ -10,7 +10,7 @@ class Elementor_Integration
 {
     public function register_widgets($widgets_manager): void
     {
-        if (class_exists('\Elementor\Widget_Container')) {
+        if (class_exists('\Elementor\Widget_Container', true)) {
             require_once ECC_DIR . 'src/Elementor/Widgets/Container_Carousel_Widget.php';
             $widgets_manager->register(new Widgets\Container_Carousel_Widget());
         }
