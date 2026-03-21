@@ -12,11 +12,6 @@ class Elementor_Integration
     {
         require_once ECC_DIR . 'src/Elementor/Widgets/Slides_Carousel_Widget.php';
         $widgets_manager->register(new Widgets\Slides_Carousel_Widget());
-
-        if (class_exists('\Elementor\Includes\Elements\Container', true)) {
-            require_once ECC_DIR . 'src/Elementor/Widgets/Container_Carousel_Widget.php';
-            $widgets_manager->register(new Widgets\Container_Carousel_Widget());
-        }
     }
 
     public function register_elements($elements_manager): void
