@@ -27,9 +27,9 @@ class Plugin
     {
         add_action('init', [$this, 'load_textdomain']);
 
+        add_action('elementor/init', [$this, 'register_widget_category'], 5);
         add_action('elementor/widgets/register', [$this, 'register_widgets']);
         add_action('elementor/elements/elements_registered', [$this, 'register_elements']);
-        add_action('elementor/elements/categories_registered', [$this, 'register_widget_category']);
         add_action('elementor/frontend/after_register_styles', [\Elementor_Container_Carousel\Elementor\Elementor_Integration::class, 'register_styles']);
         add_action('elementor/frontend/after_register_scripts', [\Elementor_Container_Carousel\Elementor\Elementor_Integration::class, 'register_scripts']);
     }
@@ -43,8 +43,14 @@ class Plugin
         );
     }
 
-    public function register_widget_category($elements_manager): void
+    public function register_widget_category(): void
     {
+        $elements_manager = \Elementor\Plugin::instance()->elements_manager;
+
+        if (!$elements_manager || !method_exists($elements_manager, 'add_category')) {
+            return;
+        }
+
         $elements_manager->add_category('yosh-tools', [
             'title' => __('Yosh Tools', 'elementor-container-carousel'),
             'icon'  => 'fa fa-plug',

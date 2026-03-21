@@ -46,6 +46,22 @@ class Container_Carousel_Widget extends Container
         return ['carousel', 'slider', 'container', 'swipe', 'yosh', 'tools'];
     }
 
+    public function get_container_type(): string
+    {
+        return 'flex';
+    }
+
+    public function get_child_type(array $element_data): ?\Elementor\Element_Base
+    {
+        $child_type = $element_data['elType'] ?? null;
+
+        if ('container' === $child_type) {
+            return \Elementor\Plugin::instance()->elements_manager->get_element_types('container');
+        }
+
+        return \Elementor\Plugin::instance()->elements_manager->get_element_types('container');
+    }
+
     public function get_style_depends(): array
     {
         return ['ecc-carousel'];
