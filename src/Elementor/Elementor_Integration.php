@@ -10,9 +10,20 @@ class Elementor_Integration
 {
     public function register_widgets($widgets_manager): void
     {
+        error_log('[ECC] Registering widgets - Elementor: ' . (defined('ELEMENTOR_VERSION') ? ELEMENTOR_VERSION : 'not loaded'));
+
         if (class_exists('\Elementor\Widget_Container', true)) {
-            require_once ECC_DIR . 'src/Elementor/Widgets/Container_Carousel_Widget.php';
-            $widgets_manager->register(new Widgets\Container_Carousel_Widget());
+            error_log('[ECC] Widget_Container class found');
+            try {
+                require_once ECC_DIR . 'src/Elementor/Widgets/Container_Carousel_Widget.php';
+                $widget = new Widgets\Container_Carousel_Widget();
+                $widgets_manager->register($widget);
+                error_log('[ECC] Container_Carousel_Widget registered successfully');
+            } catch (\Throwable $e) {
+                error_log('[ECC] Container_Carousel_Widget FAILED: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+            }
+        } else {
+            error_log('[ECC] Widget_Container class NOT found');
         }
 
         require_once ECC_DIR . 'src/Elementor/Widgets/Slides_Carousel_Widget.php';
