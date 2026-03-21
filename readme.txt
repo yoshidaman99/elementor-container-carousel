@@ -1,0 +1,76 @@
+=== Elementor Container Carousel ===
+Contributors: jerel-yoshida
+Tags: elementor, carousel, slider, swiper, container, slides, responsive, yosh-tools
+Requires at least: 5.8
+Tested up to: 6.7
+Requires PHP: 7.4
+Stable tag: 1.0.0
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+Transform any Elementor Container into a responsive carousel with Swiper.js.
+
+== Description ==
+
+Elementor Container Carousel adds two powerful carousel widgets to Elementor: a Container Wrapper that turns any Elementor containers into slides, and a Slides Carousel with a repeater for image-based slides. Powered by Swiper.js with full performance optimization.
+
+= Features =
+
+* **Container Wrapper Widget** - Drag containers inside to create slides
+* **Slides Carousel Widget** - Repeater-based slides with image, title, description
+* **Multiple Effects** - Slide, Fade, Cube, Coverflow transitions
+* **Navigation Arrows** - Customizable with Elementor icon picker
+* **Pagination** - Bullets, Fraction, Progress Bar
+* **Autoplay** - Configurable delay, pause on hover
+* **Responsive** - Desktop, tablet, mobile breakpoints
+* **Performance** - No jQuery, lazy loading, GPU-accelerated, ~15KB gzipped
+* **RTL Support** - Full right-to-left language support
+* **Loop Mode** - Infinite scrolling
+* **Keyboard & Mousewheel** - Accessible navigation
+
+== Installation ==
+
+1. Upload the plugin files to `/wp-content/plugins/elementor-container-carousel/` or install through WordPress plugins screen.
+2. Activate the plugin.
+3. Edit a page with Elementor.
+4. Find **Container Carousel** or **Slides Carousel** under the **Yosh Tools** widget category.
+
+== Frequently Asked Questions ==
+
+= How do I use the Container Carousel? =
+
+Add the Container Carousel widget to your page, then drag any Elementor containers or widgets inside it. Each direct child element becomes a carousel slide.
+
+= How do I use the Slides Carousel? =
+
+Add the Slides Carousel widget, then use the repeater in the Content tab to add slides with images, titles, descriptions, and optional links.
+
+= Is this fast? =
+
+Yes. The plugin uses vanilla JavaScript (no jQuery), conditional asset loading, lazy image loading, GPU-accelerated CSS animations, and loads scripts in the footer. Total JS footprint is ~15KB gzipped.
+
+= Does it work with Elementor Container (Flexbox)? =
+
+Yes, the Container Carousel widget is specifically designed to wrap Elementor containers.
+
+== Changelog ==
+
+= 1.0.0 =
+* Initial release
+* Container Carousel widget (wraps Elementor containers as slides)
+* Slides Carousel widget (repeater-based with image/title/description)
+* Swiper.js 11 integration
+* Slide, Fade, Cube, Coverflow effects
+* Navigation arrows with custom icons
+* Bullets, Fraction, Progress Bar pagination
+* Autoplay with delay, pause on hover, stop on interaction
+* Responsive breakpoints (desktop/tablet/mobile)
+* Lazy loading for images
+* Full Elementor style controls
+* RTL support
+* Yosh Tools widget category
+
+== Upgrade Notice ==
+
+= 1.0.0 =
+Initial release of Elementor Container Carousel plugin.
