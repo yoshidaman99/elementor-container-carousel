@@ -58,19 +58,19 @@ class Container_Carousel_Widget extends Container
 
     protected function register_controls(): void
     {
-        $this->register_slides_controls();
-        $this->register_carousel_controls();
-        $this->register_navigation_controls();
-        $this->register_pagination_controls();
-        $this->register_autoplay_controls();
-        $this->register_effects_controls();
-        $this->register_responsive_controls();
-        $this->register_performance_controls();
-        $this->register_arrow_style_controls();
-        $this->register_pagination_style_controls();
+        $this->ecc_register_slides_controls();
+        $this->ecc_register_carousel_controls();
+        $this->ecc_register_navigation_controls();
+        $this->ecc_register_pagination_controls();
+        $this->ecc_register_autoplay_controls();
+        $this->ecc_register_effects_controls();
+        $this->ecc_register_responsive_controls();
+        $this->ecc_register_performance_controls();
+        $this->ecc_register_arrow_style_controls();
+        $this->ecc_register_pagination_style_controls();
     }
 
-    private function register_slides_controls(): void
+    private function ecc_register_slides_controls(): void
     {
         $this->start_controls_section('slides_section', [
             'label' => __('Slides', 'elementor-container-carousel'),
@@ -127,7 +127,7 @@ class Container_Carousel_Widget extends Container
         $this->end_controls_section();
     }
 
-    private function register_carousel_controls(): void
+    private function ecc_register_carousel_controls(): void
     {
         $this->start_controls_section('carousel_section', [
             'label' => __('Carousel', 'elementor-container-carousel'),
@@ -183,7 +183,7 @@ class Container_Carousel_Widget extends Container
         $this->end_controls_section();
     }
 
-    private function register_navigation_controls(): void
+    private function ecc_register_navigation_controls(): void
     {
         $this->start_controls_section('navigation_section', [
             'label' => __('Navigation', 'elementor-container-carousel'),
@@ -222,7 +222,7 @@ class Container_Carousel_Widget extends Container
         $this->end_controls_section();
     }
 
-    private function register_pagination_controls(): void
+    private function ecc_register_pagination_controls(): void
     {
         $this->start_controls_section('pagination_section', [
             'label' => __('Pagination', 'elementor-container-carousel'),
@@ -279,7 +279,7 @@ class Container_Carousel_Widget extends Container
         $this->end_controls_section();
     }
 
-    private function register_autoplay_controls(): void
+    private function ecc_register_autoplay_controls(): void
     {
         $this->start_controls_section('autoplay_section', [
             'label' => __('Autoplay', 'elementor-container-carousel'),
@@ -328,7 +328,7 @@ class Container_Carousel_Widget extends Container
         $this->end_controls_section();
     }
 
-    private function register_effects_controls(): void
+    private function ecc_register_effects_controls(): void
     {
         $this->start_controls_section('effects_section', [
             'label' => __('Effects', 'elementor-container-carousel'),
@@ -390,7 +390,7 @@ class Container_Carousel_Widget extends Container
         $this->end_controls_section();
     }
 
-    private function register_responsive_controls(): void
+    private function ecc_register_responsive_controls(): void
     {
         $this->start_controls_section('responsive_section', [
             'label' => __('Responsive', 'elementor-container-carousel'),
@@ -471,7 +471,7 @@ class Container_Carousel_Widget extends Container
         $this->end_controls_section();
     }
 
-    private function register_performance_controls(): void
+    private function ecc_register_performance_controls(): void
     {
         $this->start_controls_section('performance_section', [
             'label' => __('Performance', 'elementor-container-carousel'),
@@ -509,7 +509,7 @@ class Container_Carousel_Widget extends Container
         $this->end_controls_section();
     }
 
-    private function register_arrow_style_controls(): void
+    private function ecc_register_arrow_style_controls(): void
     {
         $this->start_controls_section('arrow_style_section', [
             'label'     => __('Navigation Arrows', 'elementor-container-carousel'),
@@ -610,7 +610,7 @@ class Container_Carousel_Widget extends Container
         $this->end_controls_section();
     }
 
-    private function register_pagination_style_controls(): void
+    private function ecc_register_pagination_style_controls(): void
     {
         $this->start_controls_section('pagination_style_section', [
             'label'     => __('Pagination', 'elementor-container-carousel'),
