@@ -737,7 +737,7 @@ class Slides_Carousel_Widget extends Widget_Base
             'selectors' => [
                 '{{WRAPPER}} .ecc-slide-description' => 'color: {{VALUE}};',
             ],
-        );
+        ]);
 
         $this->add_responsive_control('slide_content_padding', [
             'label'      => __('Content Padding', 'elementor-container-carousel'),
