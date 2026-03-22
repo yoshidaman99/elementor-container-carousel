@@ -96,6 +96,14 @@ class Container_Carousel_Widget extends Widget_Base
             'tab'   => Controls_Manager::TAB_CONTENT,
         ]);
 
+        $this->add_control('ecc_add_slide', [
+            'type'        => Controls_Manager::BUTTON,
+            'text'        => __('+ Add Slide', 'elementor-container-carousel'),
+            'button_type' => 'default',
+            'event'       => 'ecc:addSlide',
+            'separator'   => 'after',
+        ]);
+
         $this->add_control('slides_per_group', [
             'label'       => __('Slides Per Group', 'elementor-container-carousel'),
             'type'        => Controls_Manager::NUMBER,

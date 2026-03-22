@@ -4,7 +4,7 @@ Tags: elementor, carousel, slider, swiper, container, slides, responsive, yosh-t
 Requires at least: 5.8
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.1.9
+Stable tag: 1.1.10
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -54,6 +54,11 @@ Yes. The plugin uses vanilla JavaScript (no jQuery), conditional asset loading, 
 Yes, the Container Carousel widget is specifically designed to wrap Elementor containers.
 
 == Changelog ==
+
+= 1.1.10 =
+* Replace inline editor slide controls (badges, delete buttons) with panel "Add Slide" button
+* Simplify editor.js by removing preview iframe DOM manipulation
+* Add editor styles for minimum carousel height in preview
 
 = 1.1.9 =
 * Fix editor controls targeting preview iframe instead of admin document
