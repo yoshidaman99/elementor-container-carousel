@@ -82,6 +82,40 @@
     });
 
     // -------------------------------------------------------------------------
+    // Patch the JS Widget view for our widget type so Elementor 3.35+ doesn't
+    // throw ForceMethodImplementation when the widget has no children.
+    // -------------------------------------------------------------------------
+    elementor.on('preview:loaded', function () {
+        setTimeout(function () {
+            try {
+                var views = elementor.modules.elements.views;
+                if (!views || !views.Widget) {
+                    return;
+                }
+                var origGetEmptyView = views.Widget.prototype.getEmptyView;
+                views.Widget.prototype.getEmptyView = function () {
+                    var widgetType = this.model && this.model.get && this.model.get('widgetType');
+                    if (widgetType === WIDGET_TYPE) {
+                        return {
+                            title: 'Container Carousel',
+                            description: 'Drag containers here to create carousel slides.',
+                            icon: 'eicon-slider-push',
+                        };
+                    }
+                    if (typeof origGetEmptyView === 'function') {
+                        try {
+                            return origGetEmptyView.call(this);
+                        } catch (e) {
+                            return {};
+                        }
+                    }
+                    return {};
+                };
+            } catch (e) { /* ignore */ }
+        }, 100);
+    });
+
+    // -------------------------------------------------------------------------
     // Inject editor-only styles into the preview iframe so child containers
     // don't collapse to a zero-height bar in the canvas.
     // -------------------------------------------------------------------------

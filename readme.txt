@@ -4,7 +4,7 @@ Tags: elementor, carousel, slider, swiper, container, slides, responsive, yosh-t
 Requires at least: 5.8
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.1.13
+Stable tag: 1.1.14
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -54,6 +54,11 @@ Yes. The plugin uses vanilla JavaScript (no jQuery), conditional asset loading, 
 Yes, the Container Carousel widget is specifically designed to wrap Elementor containers.
 
 == Changelog ==
+
+= 1.1.14 =
+* Fix ForceMethodImplementation error for Widget.getEmptyView() in Elementor 3.35+ editor
+* Patch JS Widget view prototype to provide getEmptyView for our widget type
+* Remove unused PHP getEmptyView method (not wired to JS)
 
 = 1.1.13 =
 * Fix ForceMethodImplementation error for Widget.getEmptyView() in Elementor 3.35+
