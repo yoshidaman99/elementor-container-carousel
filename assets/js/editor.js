@@ -8,67 +8,59 @@
     var WIDGET_TYPE = 'ecc_container_carousel';
     var SLIDES_WIDGET_TYPE = 'ecc_slides_carousel';
 
-    function patchElementsManager() {
-        if (!elementor.elementsManager || !elementor.elementsManager.getElementTypeClass) {
+    // -------------------------------------------------------------------------
+    // Fix ForceMethodImplementation: getEmptyView (Elementor 3.35+)
+    // -------------------------------------------------------------------------
+    // Elementor 3.35+ added @ForceMethodImplementation to Widget.getEmptyView().
+    // Third-party widgets that don't register a JS handler hit the base class
+    // method which throws. We patch Widget.prototype.initialize to add an own
+    // getEmptyView property on our widget instances, shadowing the throwing
+    // prototype method.
+    // -------------------------------------------------------------------------
+    function patchGetEmptyView() {
+        var views = null;
+
+        try {
+            views = elementor.modules.elements.views;
+        } catch (e) {
             return false;
         }
 
-        var origGetElementTypeClass = elementor.elementsManager.getElementTypeClass;
-        if (origGetElementTypeClass.__eccPatched) {
+        if (!views || !views.Widget || !views.Widget.prototype) {
+            return false;
+        }
+
+        var proto = views.Widget.prototype;
+
+        if (proto.__eccEmptyViewPatched) {
             return true;
         }
-        origGetElementTypeClass.__eccPatched = true;
 
-        elementor.elementsManager.getElementTypeClass = function (type) {
-            var typeClass = origGetElementTypeClass.call(this, type);
+        proto.__eccEmptyViewPatched = true;
 
-            if (type === WIDGET_TYPE || type === SLIDES_WIDGET_TYPE) {
-                if (typeClass && typeof typeClass.getEmptyView === 'function') {
-                    try {
-                        var test = typeClass.getEmptyView();
-                        if (test) {
-                            return typeClass;
-                        }
-                    } catch (e) {
-                    }
-                }
+        var origInitialize = proto.initialize;
 
-                if (typeClass && typeof typeClass === 'function') {
-                    function PatchedType() {
-                        typeClass.apply(this, arguments);
-                    }
-                    PatchedType.prototype = Object.create(typeClass.prototype);
-                    PatchedType.prototype.constructor = PatchedType;
-                    PatchedType.prototype.getEmptyView = function () {
-                        return null;
-                    };
-                    PatchedType.prototype.getType = function () {
-                        return type;
-                    };
-                    if (typeClass.prototype.get_default_args) {
-                        PatchedType.prototype.get_default_args = function () {
-                            return typeClass.prototype.get_default_args.call(this);
-                        };
-                    }
-                    return PatchedType;
-                }
+        proto.initialize = function () {
+            origInitialize.apply(this, arguments);
 
-                return typeClass;
+            var widgetType = this.model && typeof this.model.get === 'function'
+                ? this.model.get('widgetType')
+                : null;
+
+            if (widgetType === WIDGET_TYPE || widgetType === SLIDES_WIDGET_TYPE) {
+                this.getEmptyView = function () {
+                    return null;
+                };
             }
-
-            return typeClass;
         };
 
         return true;
     }
 
-    // Try immediately, then poll until Elementor modules are available
-    if (patchElementsManager()) {
-        // already patched
-    } else {
+    if (!patchGetEmptyView()) {
         var attempts = 0;
         var iv = setInterval(function () {
-            if (patchElementsManager() || ++attempts > 500) {
+            if (patchGetEmptyView() || ++attempts > 500) {
                 clearInterval(iv);
             }
         }, 10);
@@ -118,7 +110,6 @@
                 },
             });
         } catch (e) {
-            // Swallow – already logged by Elementor's command system.
         } finally {
             container.model.isValidChild = origIsValidChild;
             container.view.getChildType = origGetChildType;
