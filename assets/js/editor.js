@@ -8,65 +8,83 @@
     var WIDGET_TYPE = 'ecc_container_carousel';
 
     /**
-     * WHY we don't use $e.run('document/elements/create') here:
+     * Add a new container slide to the widget.
      *
-     * Elementor's Widget.prototype.isValidChild always returns false.
-     * When the command runs on a widget container it silently redirects the
-     * new element to become a child of the *last slide* instead of a new
-     * sibling slide.  Nothing visible happens in the canvas.
+     * Two guards in Elementor's command pipeline must be bypassed for a
+     * Widget_Base element to accept children:
      *
-     * Instead we add directly to the Backbone elements collection (which the
-     * navigator and the save-to-DB path both use), then trigger a settings
-     * change so Elementor re-runs content_template() and refreshes the canvas.
+     *   1. document/elements/create → validate()
+     *      Calls container.model.isValidChild(childModel).
+     *      Widget model always returns false → command aborted.
+     *
+     *   2. document/elements/create → apply() → view.addElement()
+     *      Calls this.getChildType() on the view.
+     *      Widget view returns [] → element silently redirected into
+     *      the last existing child instead of added as a sibling.
+     *
+     * We temporarily replace both methods on this specific widget instance
+     * (not on the prototype), run the command, then restore them.
+     * $e.run is synchronous so the finally block runs after the element
+     * has already been created.
      */
     elementor.channels.editor.on('ecc:addSlide', function (view) {
-        // view.options.container is set via a getter in Elementor's control view
+        // view.options.container is a lazy getter that resolves to the
+        // Container object of the element currently open in the panel.
         var container = view && view.options && view.options.container;
 
-        // Fallback: read from the panel page view (works in all 3.x versions)
         if (!container) {
             try {
                 container = elementor.getPanelView().currentPageView.options.container;
-            } catch (e) { /* ignore */ }
+            } catch (e) { return; }
         }
 
-        if (!container || !container.model) {
+        if (!container || !container.view || !container.model) {
             return;
         }
 
-        var elements = container.model.get('elements');
-        if (!elements) {
-            return;
-        }
+        // Stash originals so we can restore them after the command.
+        var origIsValidChild  = container.model.isValidChild;
+        var origGetChildType  = container.view.getChildType;
 
-        // Add a new container slide directly to the Backbone collection.
-        // This bypasses isValidChild and goes straight to the data layer.
-        var newId = elementor.helpers.getUniqueID();
-        elements.add({
-            id: newId,
-            elType: 'container',
-            settings: {},
-            elements: [],
-            isInner: false,
-        });
+        // Patch 1 – bypass validate().
+        container.model.isValidChild = function (childModel) {
+            var elType = childModel && (
+                typeof childModel.get === 'function'
+                    ? childModel.get('elType')
+                    : childModel.elType
+            );
+            return elType === 'container';
+        };
 
-        // Flag the document as having unsaved changes.
-        if (elementor.saver) {
-            elementor.saver.setFlagEditorChange();
-        }
+        // Patch 2 – bypass the childTypes check inside view.addElement().
+        container.view.getChildType = function () {
+            return ['container'];
+        };
 
-        // Trigger a settings change so Elementor re-runs content_template()
-        // and the canvas reflects the new slide.
-        if (container.settings) {
-            container.settings.trigger('change');
-        } else {
-            container.model.trigger('change');
+        try {
+            $e.run('document/elements/create', {
+                container: container,
+                model: {
+                    elType:    'container',
+                    settings:  {},
+                },
+                options: {
+                    edit: false,   // Don't auto-open the new slide's panel.
+                },
+            });
+        } catch (e) {
+            // Swallow – already logged by Elementor's command system.
+        } finally {
+            // Restore both methods immediately after the synchronous command.
+            container.model.isValidChild = origIsValidChild;
+            container.view.getChildType  = origGetChildType;
         }
     });
 
-    // ---------------------------------------------------------------------------
-    // Inject editor-only styles into the preview iframe so slides don't collapse
-    // ---------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // Inject editor-only styles into the preview iframe so child containers
+    // don't collapse to a zero-height bar in the canvas.
+    // -------------------------------------------------------------------------
     function getPreviewDocument() {
         if (elementor.$preview && elementor.$preview[0]) {
             return elementor.$preview[0].contentDocument
@@ -89,9 +107,8 @@
         }
         var style = previewDoc.createElement('style');
         style.id = 'ecc-editor-styles';
-        // In the editor, carousel.min.js never runs so children never get
-        // the swiper-slide / ecc-slide classes.  Target the raw Elementor
-        // container elements that are direct children of the slides wrapper.
+        // In the editor carousel.min.js never runs, so children don't get
+        // swiper-slide/ecc-slide classes. Target the raw Elementor elements.
         style.textContent =
             '.elementor-widget-' + WIDGET_TYPE + ' .ecc-swiper-container {' +
             '  min-height: 120px;' +

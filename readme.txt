@@ -4,7 +4,7 @@ Tags: elementor, carousel, slider, swiper, container, slides, responsive, yosh-t
 Requires at least: 5.8
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.1.11
+Stable tag: 1.1.12
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -54,6 +54,11 @@ Yes. The plugin uses vanilla JavaScript (no jQuery), conditional asset loading, 
 Yes, the Container Carousel widget is specifically designed to wrap Elementor containers.
 
 == Changelog ==
+
+= 1.1.12 =
+* Replace Backbone collection hack with temporary method patching for Add Slide
+* Patch isValidChild and getChildType on widget instance, run $e.run, then restore
+* Add Slide now uses Elementor's official command pipeline for proper canvas rendering
 
 = 1.1.11 =
 * Fix Add Slide button silently failing due to Widget isValidChild restriction
