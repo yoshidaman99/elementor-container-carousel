@@ -41,16 +41,6 @@ class Container_Carousel_Widget extends Widget_Base
         return ['carousel', 'slider', 'container', 'swipe', 'yosh', 'tools'];
     }
 
-    public function has_content_wrapper(): bool
-    {
-        return false;
-    }
-
-    public function _content_wrapper_class(): string
-    {
-        return 'elementor-widget-content';
-    }
-
     public function get_child_type(array $element_data): ?\Elementor\Element_Base
     {
         return \Elementor\Plugin::instance()->elements_manager->get_element_types('container');
@@ -918,5 +908,12 @@ class Container_Carousel_Widget extends Widget_Base
             <# } #>
         </div>
         <?php
+    }
+
+    protected function getEmptyView(): string
+    {
+        return '<div class="elementor-widget-empty">' .
+               esc_html__('Add containers to create your carousel.', 'elementor-container-carousel') .
+               '</div>';
     }
 }

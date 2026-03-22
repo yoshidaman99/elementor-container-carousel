@@ -948,4 +948,62 @@ class Slides_Carousel_Widget extends Widget_Base
         </div>
         <?php
     }
+
+    protected function content_template(): void
+    {
+        ?>
+        <div class="ecc-swiper-container swiper" data-swiper="" data-widget-id="{{ view.getID() }}">
+            <div class="swiper-wrapper">
+                <# if (settings.slides_list) { #>
+                    <# _.each(settings.slides_list, function(slide, index) { #>
+                        <div class="swiper-slide ecc-slide">
+                            <# if (slide.slide_image && slide.slide_image.url) { #>
+                                <img class="ecc-slide-image" src="{{ slide.slide_image.url }}" alt="{{ slide.slide_title }}">
+                            <# } #>
+                            <# if (slide.slide_overlay === 'yes' && slide.slide_overlay_color) { #>
+                                <div class="ecc-slide-overlay" style="background-color: {{ slide.slide_overlay_color }}"></div>
+                            <# } #>
+                            <# if (slide.slide_title || slide.slide_description) { #>
+                                <div class="ecc-slide-content ecc-slide-content-{{ slide.slide_content_position }}">
+                                    <# if (slide.slide_title) { #>
+                                        <# if (slide.slide_link && slide.slide_link.url) { #>
+                                            <a href="{{ slide.slide_link.url }}" class="ecc-slide-title">{{{ slide.slide_title }}}</a>
+                                        <# } else { #>
+                                            <span class="ecc-slide-title">{{{ slide.slide_title }}}</span>
+                                        <# } #>
+                                    <# } #>
+                                    <# if (slide.slide_description) { #>
+                                        <div class="ecc-slide-description">{{{ slide.slide_description }}}</div>
+                                    <# } #>
+                                </div>
+                            <# } #>
+                        </div>
+                    <# }); #>
+                <# } #>
+            </div>
+            <# if (settings.show_pagination === 'yes') { #>
+                <div class="swiper-pagination ecc-pagination-{{ view.getID() }}"></div>
+            <# } #>
+            <# if (settings.show_navigation === 'yes') { #>
+                <div class="ecc-nav-button ecc-nav-prev-{{ view.getID() }}">
+                    <# if (settings.nav_prev_icon && settings.nav_prev_icon.value) { #>
+                        <i class="{{ settings.nav_prev_icon.value }}"></i>
+                    <# } #>
+                </div>
+                <div class="ecc-nav-button ecc-nav-next-{{ view.getID() }}">
+                    <# if (settings.nav_next_icon && settings.nav_next_icon.value) { #>
+                        <i class="{{ settings.nav_next_icon.value }}"></i>
+                    <# } #>
+                </div>
+            <# } #>
+        </div>
+        <?php
+    }
+
+    protected function getEmptyView(): string
+    {
+        return '<div class="elementor-widget-empty">' .
+               esc_html__('Add slides to create your carousel.', 'elementor-container-carousel') .
+               '</div>';
+    }
 }
