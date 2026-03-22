@@ -84,17 +84,28 @@
     // -------------------------------------------------------------------------
     // Patch the JS Widget view for our widget type so Elementor 3.35+ doesn't
     // throw ForceMethodImplementation when the widget has no children.
+    //
+    // The rendering chain (onPreviewLoaded → Promise.then → renderPreview)
+    // runs as a microtask that completes BEFORE any setTimeout macrotask fires.
+    // We must patch the prototype synchronously during elementor.init (well
+    // before preview:loaded) using an aggressive polling loop.
     // -------------------------------------------------------------------------
-    elementor.on('preview:loaded', function () {
-        setTimeout(function () {
+    (function patchGetEmptyView() {
+        var patched = false;
+
+        function doPatch() {
             try {
-                var views = elementor.modules.elements.views;
-                if (!views || !views.Widget) {
-                    return;
+                var views = elementor.modules && elementor.modules.elements
+                    && elementor.modules.elements.views;
+                if (!views || !views.Widget || views.Widget.prototype.__eccPatched) {
+                    return !!views && !!views.Widget;
                 }
+                views.Widget.prototype.__eccPatched = true;
+
                 var origGetEmptyView = views.Widget.prototype.getEmptyView;
                 views.Widget.prototype.getEmptyView = function () {
-                    var widgetType = this.model && this.model.get && this.model.get('widgetType');
+                    var widgetType = this.model && this.model.get
+                        && this.model.get('widgetType');
                     if (widgetType === WIDGET_TYPE) {
                         return {
                             title: 'Container Carousel',
@@ -103,17 +114,24 @@
                         };
                     }
                     if (typeof origGetEmptyView === 'function') {
-                        try {
-                            return origGetEmptyView.call(this);
-                        } catch (e) {
-                            return {};
-                        }
+                        try { return origGetEmptyView.call(this); }
+                        catch (e) { return {}; }
                     }
                     return {};
                 };
-            } catch (e) { /* ignore */ }
-        }, 100);
-    });
+                return true;
+            } catch (e) { return false; }
+        }
+
+        if (doPatch()) { return; }
+
+        var attempts = 0;
+        var iv = setInterval(function () {
+            if (doPatch() || ++attempts > 500) {
+                clearInterval(iv);
+            }
+        }, 10);
+    })();
 
     // -------------------------------------------------------------------------
     // Inject editor-only styles into the preview iframe so child containers
