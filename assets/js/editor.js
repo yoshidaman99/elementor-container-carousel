@@ -8,19 +8,6 @@
     var WIDGET_TYPE = 'ecc_container_carousel';
     var SLIDES_WIDGET_TYPE = 'ecc_slides_carousel';
 
-    // -------------------------------------------------------------------------
-    // Fix ForceMethodImplementation for getEmptyView in Elementor 3.35+.
-    //
-    // Elementor calls getEmptyView() on the *element type class* returned by
-    // elementor.elementsManager.getElementTypeClass(widgetType) — NOT on the
-    // Widget view prototype.  Custom widgets have no registered element type
-    // so they fall back to the generic "widget" base whose getEmptyView()
-    // throws ForceMethodImplementation.
-    //
-    // We monkey-patch getElementTypeClass so it returns a patched object
-    // (that delegates to the original but overrides getEmptyView) for our
-    // widget types.  This must run synchronously before any preview rendering.
-    // -------------------------------------------------------------------------
     function patchElementsManager() {
         if (!elementor.elementsManager || !elementor.elementsManager.getElementTypeClass) {
             return false;
@@ -43,21 +30,30 @@
                             return typeClass;
                         }
                     } catch (e) {
-                        // getEmptyView throws — wrap it
                     }
                 }
 
-                // Return a proxy that overrides getEmptyView to return null
-                // (null = no empty view React component = no error)
-                var ProxyType = function () {};
-                ProxyType.prototype = typeClass || {};
-                ProxyType.prototype.getEmptyView = function () {
-                    return null;
-                };
-                ProxyType.prototype.getType = function () {
-                    return type;
-                };
-                return new ProxyType();
+                if (typeClass && typeof typeClass === 'function') {
+                    function PatchedType() {
+                        typeClass.apply(this, arguments);
+                    }
+                    PatchedType.prototype = Object.create(typeClass.prototype);
+                    PatchedType.prototype.constructor = PatchedType;
+                    PatchedType.prototype.getEmptyView = function () {
+                        return null;
+                    };
+                    PatchedType.prototype.getType = function () {
+                        return type;
+                    };
+                    if (typeClass.prototype.get_default_args) {
+                        PatchedType.prototype.get_default_args = function () {
+                            return typeClass.prototype.get_default_args.call(this);
+                        };
+                    }
+                    return PatchedType;
+                }
+
+                return typeClass;
             }
 
             return typeClass;
@@ -165,12 +161,63 @@
         previewDoc.head.appendChild(style);
     }
 
+    function patchSlideClasses() {
+        var previewDoc = getPreviewDocument();
+        if (!previewDoc || !previewDoc.body) {
+            return;
+        }
+
+        previewDoc.querySelectorAll('.ecc-slide-wrapper').forEach(function (wrapper) {
+            Array.prototype.forEach.call(wrapper.children, function (child) {
+                if (child.nodeType === 1 && !child.classList.contains('swiper-slide')) {
+                    child.classList.add('swiper-slide', 'ecc-slide');
+                }
+            });
+        });
+    }
+
+    function observeSlideClasses() {
+        var previewDoc = getPreviewDocument();
+        if (!previewDoc || !previewDoc.body || !window.MutationObserver) {
+            return;
+        }
+
+        if (previewDoc.getElementById('ecc-slide-observer-active')) {
+            return;
+        }
+
+        var marker = previewDoc.createElement('meta');
+        marker.id = 'ecc-slide-observer-active';
+        previewDoc.head.appendChild(marker);
+
+        new MutationObserver(function (mutations) {
+            var needsPatch = false;
+            for (var i = 0; i < mutations.length; i++) {
+                if (mutations[i].addedNodes.length > 0) {
+                    needsPatch = true;
+                    break;
+                }
+            }
+            if (needsPatch) {
+                patchSlideClasses();
+            }
+        }).observe(previewDoc.body, { childList: true, subtree: true });
+    }
+
     elementor.on('preview:loaded', function () {
-        setTimeout(injectEditorStyles, 300);
+        setTimeout(function () {
+            injectEditorStyles();
+            patchSlideClasses();
+            observeSlideClasses();
+        }, 300);
     });
 
     elementor.on('preview:afterLoading', function () {
-        setTimeout(injectEditorStyles, 300);
+        setTimeout(function () {
+            injectEditorStyles();
+            patchSlideClasses();
+            observeSlideClasses();
+        }, 300);
     });
 
 })();
