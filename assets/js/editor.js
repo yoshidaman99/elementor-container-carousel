@@ -11,6 +11,11 @@
     var SLIDE_SELECTOR = '.swiper-slide.ecc-slide';
 
     function getWidgetContainer(widgetEl) {
+        var elementId = widgetEl.getAttribute('data-id');
+        if (elementId && typeof elementor.getContainer === 'function') {
+            return elementor.getContainer(elementId);
+        }
+        // Fallback for older Elementor without getContainer
         var cid = widgetEl.getAttribute('data-model-cid');
         if (!cid) {
             return null;
@@ -35,11 +40,6 @@
     }
 
     function addNewSlide(widgetEl) {
-        var cid = getWidgetModelCid(widgetEl);
-        if (!cid) {
-            return;
-        }
-
         var container = getWidgetContainer(widgetEl);
         if (!container) {
             return;
@@ -54,6 +54,10 @@
                 }
             });
         } else {
+            var cid = getWidgetModelCid(widgetEl);
+            if (!cid) {
+                return;
+            }
             elementor.getPreviewView().addChildElement(cid, {
                 elType: 'container',
                 isInner: false,
@@ -67,47 +71,33 @@
     }
 
     function deleteSlide(slideEl) {
-        var modelId = slideEl.getAttribute('data-model-cid');
-        if (!modelId) {
-            return;
-        }
+        var elementId = slideEl.getAttribute('data-id');
 
-        var previewView = elementor.getPreviewView();
-        if (!previewView) {
-            return;
-        }
-
-        var childView = previewView.children.findByModelCid(modelId);
-        if (!childView) {
-            var allChildren = previewView.children._views;
-            for (var key in allChildren) {
-                if (allChildren.hasOwnProperty(key)) {
-                    var view = allChildren[key];
-                    if (view && view.$el && view.$el.is(slideEl)) {
-                        childView = view;
-                        break;
-                    }
-                    if (view && view.$el && view.$el.find(slideEl).length) {
-                        childView = view;
-                        break;
-                    }
-                }
+        if (typeof $e !== 'undefined' && elementId && typeof elementor.getContainer === 'function') {
+            var slideContainer = elementor.getContainer(elementId);
+            if (!slideContainer) {
+                return;
             }
-        }
-
-        if (!childView) {
-            return;
-        }
-
-        if (typeof $e !== 'undefined') {
             $e.run('document/elements/delete', {
-                container: childView
+                container: slideContainer
             });
         } else {
+            // Fallback for older Elementor
+            var modelId = slideEl.getAttribute('data-model-cid');
+            if (!modelId) {
+                return;
+            }
+            var previewView = elementor.getPreviewView();
+            if (!previewView) {
+                return;
+            }
+            var childView = previewView.children.findByModelCid(modelId);
+            if (!childView) {
+                return;
+            }
             childView.remove();
         }
 
-        var widgetEl = slideEl.closest(WIDGET_SELECTOR);
         setTimeout(function () {
             refreshEditorControls();
         }, 600);
