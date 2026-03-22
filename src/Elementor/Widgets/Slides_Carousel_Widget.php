@@ -52,6 +52,15 @@ class Slides_Carousel_Widget extends Widget_Base
         return ['ecc-carousel'];
     }
 
+    public function get_initial_config()
+    {
+        $config = parent::get_initial_config();
+
+        $config['tabs_controls'] = $this->get_tabs_controls();
+
+        return $config;
+    }
+
     protected function register_controls(): void
     {
         $this->register_slides_content_controls();

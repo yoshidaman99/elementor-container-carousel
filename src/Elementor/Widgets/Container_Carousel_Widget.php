@@ -80,6 +80,7 @@ class Container_Carousel_Widget extends Widget_Base
         $config = parent::get_initial_config();
 
         $config['support_nesting'] = true;
+        $config['tabs_controls'] = $this->get_tabs_controls();
         $config['defaults'] = [
             'elements' => $this->get_default_children_elements(),
             'elements_title' => __('Slide #%d', 'elementor-container-carousel'),
