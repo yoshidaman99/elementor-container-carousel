@@ -53,6 +53,17 @@ class Elementor_Integration
         );
     }
 
+    public static function enqueue_editor_assets(): void
+    {
+        wp_enqueue_script(
+            'ecc-carousel-editor',
+            ECC_URL . 'assets/js/editor.js',
+            [],
+            ECC_VERSION,
+            true
+        );
+    }
+
     public static function enqueue_assets(): void
     {
         wp_enqueue_style('ecc-carousel');

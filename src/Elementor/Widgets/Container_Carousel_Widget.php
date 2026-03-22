@@ -49,7 +49,9 @@ class Container_Carousel_Widget extends Widget_Base
     public function get_default_children_elements(): array
     {
         return [
-            ['elType' => 'container'],
+            ['elType' => 'container', 'isInner' => false, 'elements' => []],
+            ['elType' => 'container', 'isInner' => false, 'elements' => []],
+            ['elType' => 'container', 'isInner' => false, 'elements' => []],
         ];
     }
 
