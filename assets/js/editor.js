@@ -11,45 +11,49 @@
     // -------------------------------------------------------------------------
     // Fix ForceMethodImplementation: getEmptyView (Elementor 3.35+)
     // -------------------------------------------------------------------------
-    // Elementor 3.35+ added @ForceMethodImplementation to Widget.getEmptyView().
-    // Third-party widgets that don't register a JS handler hit the base class
-    // method which throws. We patch Widget.prototype.initialize to add an own
-    // getEmptyView property on our widget instances, shadowing the throwing
-    // prototype method.
+    // Elementor 3.35+ added @ForceMethodImplementation to ElementBase.getEmptyView().
+    // Third-party widgets without a registered JS element type fall back to the
+    // base Widget type (editor.js:30076) which inherits the throwing method from
+    // ElementBase (editor.js:30735). We intercept getElementTypeClass() for our
+    // widget types and wrap the returned type object so getEmptyView() returns a
+    // valid React function component instead of throwing.
     // -------------------------------------------------------------------------
+    var ECCEmptyComponent = function () {
+        return null;
+    };
+
     function patchGetEmptyView() {
-        var views = null;
-
-        try {
-            views = elementor.modules.elements.views;
-        } catch (e) {
+        if (!elementor || !elementor.elementsManager) {
             return false;
         }
 
-        if (!views || !views.Widget || !views.Widget.prototype) {
-            return false;
-        }
+        var manager = elementor.elementsManager;
 
-        var proto = views.Widget.prototype;
-
-        if (proto.__eccEmptyViewPatched) {
+        if (manager.__eccPatched) {
             return true;
         }
 
-        proto.__eccEmptyViewPatched = true;
+        manager.__eccPatched = true;
 
-        var origGetEmptyView = proto.getEmptyView;
+        var origGetElementTypeClass = manager.getElementElementTypeClass;
 
-        proto.getEmptyView = function () {
-            var widgetType = this.model && typeof this.model.get === 'function'
-                ? this.model.get('widgetType')
-                : null;
+        if (typeof origGetElementTypeClass !== 'function') {
+            return false;
+        }
 
-            if (widgetType === WIDGET_TYPE || widgetType === SLIDES_WIDGET_TYPE) {
-                return null;
+        manager.getElementElementTypeClass = function (type) {
+            var orig = origGetElementTypeClass.call(this, type);
+
+            if (orig && (type === WIDGET_TYPE || type === SLIDES_WIDGET_TYPE)) {
+                return {
+                    getModel: function () { return orig.getModel(); },
+                    getView: function () { return orig.getView(); },
+                    getType: function () { return orig.getType(); },
+                    getEmptyView: function () { return ECCEmptyComponent; }
+                };
             }
 
-            return origGetEmptyView.apply(this, arguments);
+            return orig;
         };
 
         return true;
