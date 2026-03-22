@@ -38,20 +38,18 @@
 
         proto.__eccEmptyViewPatched = true;
 
-        var origInitialize = proto.initialize;
+        var origGetEmptyView = proto.getEmptyView;
 
-        proto.initialize = function () {
-            origInitialize.apply(this, arguments);
-
+        proto.getEmptyView = function () {
             var widgetType = this.model && typeof this.model.get === 'function'
                 ? this.model.get('widgetType')
                 : null;
 
             if (widgetType === WIDGET_TYPE || widgetType === SLIDES_WIDGET_TYPE) {
-                this.getEmptyView = function () {
-                    return null;
-                };
+                return null;
             }
+
+            return origGetEmptyView.apply(this, arguments);
         };
 
         return true;
