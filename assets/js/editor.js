@@ -1,58 +1,124 @@
 (function () {
     'use strict';
 
-    var ELEMENTOR_EDITOR = typeof elementor !== 'undefined' && elementor;
-    var ECC_SELECTOR = '.elementor-widget-ecc_container_carousel';
-    var WRAPPER_SELECTOR = '.ecc-swiper-container';
-    var SLIDE_SELECTOR = '.swiper-slide.ecc-slide';
-
-    if (!ELEMENTOR_EDITOR) {
+    if (typeof elementor === 'undefined') {
         return;
     }
 
-    elementor.on('panel:open', function (panel) {
-        addEditorControls();
-    });
+    var WIDGET_TYPE = 'ecc_container_carousel';
+    var WIDGET_SELECTOR = '.elementor-widget-' + WIDGET_TYPE;
+    var WRAPPER_SELECTOR = '.ecc-swiper-container';
+    var SLIDE_SELECTOR = '.swiper-slide.ecc-slide';
 
-    elementor.on('preview:loaded', function () {
-        setTimeout(addEditorControls, 500);
-    });
-
-    elementor.channels.editor.on('change:widget', function (ctrl) {
-        if (ctrl && ctrl.model && ctrl.model.attributes && ctrl.model.attributes.widgetType === 'ecc_container_carousel') {
-            setTimeout(addEditorControls, 200);
+    function getWidgetContainer(widgetEl) {
+        var cid = widgetEl.getAttribute('data-model-cid');
+        if (!cid) {
+            return null;
         }
-    });
-
-    elementor.on('preview:afterLoading', function () {
-        setTimeout(addEditorControls, 500);
-    });
-
-    function addEditorControls() {
-        var widgets = document.querySelectorAll(ECC_SELECTOR);
-        widgets.forEach(function (widgetEl) {
-            if (widgetEl.querySelector('.ecc-editor-add-slide')) {
-                return;
-            }
-            var wrapper = widgetEl.querySelector(WRAPPER_SELECTOR);
-            if (!wrapper) {
-                return;
-            }
-
-            addSlideNumberBadges(widgetEl, wrapper);
-            addDeleteButtons(widgetEl, wrapper);
-            addSlideButton(widgetEl, wrapper);
-        });
+        var previewView = elementor.getPreviewView();
+        if (!previewView) {
+            return null;
+        }
+        return previewView.children.findByModelCid(cid);
     }
 
-    function addSlideNumberBadges(widgetEl, wrapper) {
-        var existingBadges = widgetEl.querySelectorAll('.ecc-slide-badge');
-        existingBadges.forEach(function (badge) {
-            badge.remove();
-        });
+    function getWidgetModelCid(widgetEl) {
+        var cid = widgetEl.getAttribute('data-model-cid');
+        if (cid) {
+            return cid;
+        }
+        var container = getWidgetContainer(widgetEl);
+        if (container && container.model) {
+            return container.model.cid;
+        }
+        return null;
+    }
 
+    function addNewSlide(widgetEl) {
+        var cid = getWidgetModelCid(widgetEl);
+        if (!cid) {
+            return;
+        }
+
+        var container = getWidgetContainer(widgetEl);
+        if (!container) {
+            return;
+        }
+
+        if (typeof $e !== 'undefined') {
+            $e.run('document/elements/create', {
+                container: container,
+                model: {
+                    elType: 'container',
+                    settings: {},
+                }
+            });
+        } else {
+            elementor.getPreviewView().addChildElement(cid, {
+                elType: 'container',
+                isInner: false,
+                elements: []
+            }, {});
+        }
+
+        setTimeout(function () {
+            refreshEditorControls();
+        }, 600);
+    }
+
+    function deleteSlide(slideEl) {
+        var modelId = slideEl.getAttribute('data-model-cid');
+        if (!modelId) {
+            return;
+        }
+
+        var previewView = elementor.getPreviewView();
+        if (!previewView) {
+            return;
+        }
+
+        var childView = previewView.children.findByModelCid(modelId);
+        if (!childView) {
+            var allChildren = previewView.children._views;
+            for (var key in allChildren) {
+                if (allChildren.hasOwnProperty(key)) {
+                    var view = allChildren[key];
+                    if (view && view.$el && view.$el.is(slideEl)) {
+                        childView = view;
+                        break;
+                    }
+                    if (view && view.$el && view.$el.find(slideEl).length) {
+                        childView = view;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!childView) {
+            return;
+        }
+
+        if (typeof $e !== 'undefined') {
+            $e.run('document/elements/delete', {
+                container: childView
+            });
+        } else {
+            childView.remove();
+        }
+
+        var widgetEl = slideEl.closest(WIDGET_SELECTOR);
+        setTimeout(function () {
+            refreshEditorControls();
+        }, 600);
+    }
+
+    function addSlideNumberBadges(wrapper) {
         var slides = wrapper.querySelectorAll(SLIDE_SELECTOR);
         slides.forEach(function (slide, index) {
+            if (slide.querySelector('.ecc-slide-badge')) {
+                return;
+            }
             var badge = document.createElement('div');
             badge.className = 'ecc-slide-badge';
             badge.textContent = 'Slide ' + (index + 1);
@@ -62,14 +128,12 @@
         });
     }
 
-    function addDeleteButtons(widgetEl, wrapper) {
-        var existingBtns = widgetEl.querySelectorAll('.ecc-editor-delete-slide');
-        existingBtns.forEach(function (btn) {
-            btn.remove();
-        });
-
+    function addDeleteButtons(wrapper) {
         var slides = wrapper.querySelectorAll(SLIDE_SELECTOR);
         slides.forEach(function (slide) {
+            if (slide.querySelector('.ecc-editor-delete-slide')) {
+                return;
+            }
             var btn = document.createElement('button');
             btn.className = 'ecc-editor-delete-slide';
             btn.innerHTML = '&times;';
@@ -96,6 +160,10 @@
     }
 
     function addSlideButton(widgetEl, wrapper) {
+        if (widgetEl.querySelector('.ecc-editor-add-slide')) {
+            return;
+        }
+
         var addBtn = document.createElement('button');
         addBtn.className = 'ecc-editor-add-slide';
         addBtn.innerHTML = '+ Add Slide';
@@ -120,66 +188,35 @@
         wrapper.parentNode.appendChild(addBtn);
     }
 
-    function addNewSlide(widgetEl) {
-        var viewId = widgetEl.getAttribute('data-model-cid') || widgetEl.closest('[data-model-cid]')?.getAttribute('data-model-cid');
-
-        if (!viewId) {
-            var widgetView = getWidgetView(widgetEl);
-            if (widgetView) {
-                viewId = widgetView.model.get('id');
+    function addEditorControls() {
+        var widgets = document.querySelectorAll(WIDGET_SELECTOR);
+        widgets.forEach(function (widgetEl) {
+            var wrapper = widgetEl.querySelector(WRAPPER_SELECTOR);
+            if (!wrapper) {
+                return;
             }
-        }
 
-        if (viewId) {
-            elementor.getPreviewView().addChildElement(viewId, {
-                elType: 'container',
-                isInner: false,
-                elements: []
-            }, {});
-        }
-
-        setTimeout(function () {
-            refreshControls(widgetEl);
-        }, 600);
+            addSlideNumberBadges(wrapper);
+            addDeleteButtons(wrapper);
+            addSlideButton(widgetEl, wrapper);
+        });
     }
 
-    function deleteSlide(slideEl) {
-        var modelId = slideEl.getAttribute('data-model-cid');
-        if (!modelId) {
-            modelId = slideEl.closest('[data-model-cid]')?.getAttribute('data-model-cid');
-        }
+    function refreshEditorControls() {
+        var existingAddBtns = document.querySelectorAll('.ecc-editor-add-slide');
+        existingAddBtns.forEach(function (btn) {
+            btn.remove();
+        });
 
-        if (modelId) {
-            if (typeof $e !== 'undefined') {
-                $e.run('document/elements/delete', {
-                    container: elementor.getPreviewView().children.findByModelCid(modelId)
-                });
-            }
-        }
+        var existingBadges = document.querySelectorAll('.ecc-slide-badge');
+        existingBadges.forEach(function (badge) {
+            badge.remove();
+        });
 
-        var widgetEl = slideEl.closest(ECC_SELECTOR);
-        setTimeout(function () {
-            refreshControls(widgetEl);
-        }, 600);
-    }
-
-    function getWidgetView(widgetEl) {
-        var cid = widgetEl.getAttribute('data-model-cid');
-        if (!cid) {
-            return null;
-        }
-        return elementor.getPreviewView().children.findByModelCid(cid);
-    }
-
-    function refreshControls(widgetEl) {
-        if (!widgetEl) {
-            return;
-        }
-
-        var existingAdd = widgetEl.querySelector('.ecc-editor-add-slide');
-        if (existingAdd) {
-            existingAdd.remove();
-        }
+        var existingDeleteBtns = document.querySelectorAll('.ecc-editor-delete-slide');
+        existingDeleteBtns.forEach(function (btn) {
+            btn.remove();
+        });
 
         setTimeout(function () {
             addEditorControls();
@@ -192,9 +229,64 @@
         }
         var style = document.createElement('style');
         style.id = 'ecc-editor-styles';
-        style.textContent = ECC_SELECTOR + ' .elementor-empty-view { display: none; }';
+        style.textContent =
+            WIDGET_SELECTOR + ' .elementor-empty-view {' +
+            '  display: flex !important;' +
+            '  min-height: 80px;' +
+            '  align-items: center;' +
+            '  justify-content: center;' +
+            '  border: 2px dashed #c4cad4;' +
+            '  border-radius: 4px;' +
+            '  margin: 8px;' +
+            '  color: #a0aab5;' +
+            '  font-size: 13px;' +
+            '  cursor: pointer;' +
+            '}' +
+            WIDGET_SELECTOR + ' .elementor-empty-view:hover {' +
+            '  border-color: #9da5ae;' +
+            '  color: #6d7882;' +
+            '}' +
+            WIDGET_SELECTOR + ' .elementor-empty-view .elementor-empty-view-icon {' +
+            '  display: block !important;' +
+            '}' +
+            WIDGET_SELECTOR + ' .elementor-empty-view .elementor-first-add {' +
+            '  display: block !important;' +
+            '  text-align: center;' +
+            '  width: 100%;' +
+            '}' +
+            WIDGET_SELECTOR + ' .elementor-sortable-placeholder {' +
+            '  background: rgba(95, 122, 255, 0.08) !important;' +
+            '  border: 2px dashed #5f7aff !important;' +
+            '  border-radius: 4px;' +
+            '  min-height: 60px;' +
+            '  transition: all 0.2s;' +
+            '}' +
+            WIDGET_SELECTOR + ' .elementor-widget-content {' +
+            '  min-height: 1px;' +
+            '}' +
+            WIDGET_SELECTOR + ' .elementor-element > .elementor-widget-content {' +
+            '  position: relative;' +
+            '}';
         document.head.appendChild(style);
     }
+
+    elementor.on('panel:open', function () {
+        addEditorControls();
+    });
+
+    elementor.on('preview:loaded', function () {
+        setTimeout(addEditorControls, 500);
+    });
+
+    elementor.channels.editor.on('change:widget', function (ctrl) {
+        if (ctrl && ctrl.model && ctrl.model.attributes && ctrl.model.attributes.widgetType === WIDGET_TYPE) {
+            setTimeout(addEditorControls, 200);
+        }
+    });
+
+    elementor.on('preview:afterLoading', function () {
+        setTimeout(addEditorControls, 500);
+    });
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', injectEditorStyles);
