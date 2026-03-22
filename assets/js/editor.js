@@ -35,7 +35,7 @@
 
         manager.__eccPatched = true;
 
-        var origGetElementTypeClass = manager.getElementElementTypeClass;
+        var origGetElementTypeClass = manager.getElementTypeClass;
 
         if (typeof origGetElementTypeClass !== 'function') {
             return false;
