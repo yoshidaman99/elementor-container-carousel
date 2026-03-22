@@ -10,6 +10,18 @@
     var WRAPPER_SELECTOR = '.ecc-swiper-container';
     var SLIDE_SELECTOR = '.swiper-slide.ecc-slide';
 
+    // editor.js runs in the editor admin window; widgets live inside the preview iframe
+    function getPreviewDocument() {
+        if (elementor.$preview && elementor.$preview[0]) {
+            return elementor.$preview[0].contentDocument || elementor.$preview[0].contentWindow.document;
+        }
+        var frame = document.getElementById('elementor-preview-iframe');
+        if (frame) {
+            return frame.contentDocument || frame.contentWindow.document;
+        }
+        return document;
+    }
+
     function getWidgetContainer(widgetEl) {
         var elementId = widgetEl.getAttribute('data-id');
         if (elementId && typeof elementor.getContainer === 'function') {
@@ -82,7 +94,6 @@
                 container: slideContainer
             });
         } else {
-            // Fallback for older Elementor
             var modelId = slideEl.getAttribute('data-model-cid');
             if (!modelId) {
                 return;
@@ -104,12 +115,13 @@
     }
 
     function addSlideNumberBadges(wrapper) {
+        var previewDoc = getPreviewDocument();
         var slides = wrapper.querySelectorAll(SLIDE_SELECTOR);
         slides.forEach(function (slide, index) {
             if (slide.querySelector('.ecc-slide-badge')) {
                 return;
             }
-            var badge = document.createElement('div');
+            var badge = previewDoc.createElement('div');
             badge.className = 'ecc-slide-badge';
             badge.textContent = 'Slide ' + (index + 1);
             badge.style.cssText = 'position:absolute;top:8px;left:8px;background:#1e1e1e;color:#fff;font-size:11px;padding:2px 8px;border-radius:4px;z-index:100;pointer-events:none;font-family:system-ui,sans-serif;letter-spacing:0.5px;';
@@ -119,12 +131,13 @@
     }
 
     function addDeleteButtons(wrapper) {
+        var previewDoc = getPreviewDocument();
         var slides = wrapper.querySelectorAll(SLIDE_SELECTOR);
         slides.forEach(function (slide) {
             if (slide.querySelector('.ecc-editor-delete-slide')) {
                 return;
             }
-            var btn = document.createElement('button');
+            var btn = previewDoc.createElement('button');
             btn.className = 'ecc-editor-delete-slide';
             btn.innerHTML = '&times;';
             btn.title = 'Delete Slide';
@@ -150,11 +163,12 @@
     }
 
     function addSlideButton(widgetEl, wrapper) {
+        var previewDoc = getPreviewDocument();
         if (widgetEl.querySelector('.ecc-editor-add-slide')) {
             return;
         }
 
-        var addBtn = document.createElement('button');
+        var addBtn = previewDoc.createElement('button');
         addBtn.className = 'ecc-editor-add-slide';
         addBtn.innerHTML = '+ Add Slide';
         addBtn.style.cssText = 'display:flex;align-items:center;justify-content:center;width:100%;min-height:60px;border:2px dashed #a0adc8;border-radius:8px;background:rgba(255,255,255,0.7);color:#a0adc8;font-size:14px;font-weight:600;cursor:pointer;margin-top:12px;transition:all 0.2s;font-family:system-ui,sans-serif;letter-spacing:0.3px;';
@@ -179,7 +193,11 @@
     }
 
     function addEditorControls() {
-        var widgets = document.querySelectorAll(WIDGET_SELECTOR);
+        var previewDoc = getPreviewDocument();
+        if (!previewDoc) {
+            return;
+        }
+        var widgets = previewDoc.querySelectorAll(WIDGET_SELECTOR);
         widgets.forEach(function (widgetEl) {
             var wrapper = widgetEl.querySelector(WRAPPER_SELECTOR);
             if (!wrapper) {
@@ -193,18 +211,18 @@
     }
 
     function refreshEditorControls() {
-        var existingAddBtns = document.querySelectorAll('.ecc-editor-add-slide');
-        existingAddBtns.forEach(function (btn) {
+        var previewDoc = getPreviewDocument();
+        if (!previewDoc) {
+            return;
+        }
+
+        previewDoc.querySelectorAll('.ecc-editor-add-slide').forEach(function (btn) {
             btn.remove();
         });
-
-        var existingBadges = document.querySelectorAll('.ecc-slide-badge');
-        existingBadges.forEach(function (badge) {
+        previewDoc.querySelectorAll('.ecc-slide-badge').forEach(function (badge) {
             badge.remove();
         });
-
-        var existingDeleteBtns = document.querySelectorAll('.ecc-editor-delete-slide');
-        existingDeleteBtns.forEach(function (btn) {
+        previewDoc.querySelectorAll('.ecc-editor-delete-slide').forEach(function (btn) {
             btn.remove();
         });
 
@@ -214,10 +232,14 @@
     }
 
     function injectEditorStyles() {
-        if (document.getElementById('ecc-editor-styles')) {
+        var previewDoc = getPreviewDocument();
+        if (!previewDoc || !previewDoc.head) {
             return;
         }
-        var style = document.createElement('style');
+        if (previewDoc.getElementById('ecc-editor-styles')) {
+            return;
+        }
+        var style = previewDoc.createElement('style');
         style.id = 'ecc-editor-styles';
         style.textContent =
             WIDGET_SELECTOR + ' .elementor-empty-view {' +
@@ -257,7 +279,7 @@
             WIDGET_SELECTOR + ' .elementor-element > .elementor-widget-content {' +
             '  position: relative;' +
             '}';
-        document.head.appendChild(style);
+        previewDoc.head.appendChild(style);
     }
 
     elementor.on('panel:open', function () {
@@ -265,7 +287,10 @@
     });
 
     elementor.on('preview:loaded', function () {
-        setTimeout(addEditorControls, 500);
+        setTimeout(function () {
+            injectEditorStyles();
+            addEditorControls();
+        }, 500);
     });
 
     elementor.channels.editor.on('change:widget', function (ctrl) {
@@ -275,12 +300,9 @@
     });
 
     elementor.on('preview:afterLoading', function () {
-        setTimeout(addEditorControls, 500);
+        setTimeout(function () {
+            injectEditorStyles();
+            addEditorControls();
+        }, 500);
     });
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', injectEditorStyles);
-    } else {
-        injectEditorStyles();
-    }
 })();
