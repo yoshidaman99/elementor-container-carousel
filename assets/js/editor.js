@@ -41,7 +41,7 @@
             return false;
         }
 
-        manager.getElementElementTypeClass = function (type) {
+        manager.getElementTypeClass = function (type) {
             var orig = origGetElementTypeClass.call(this, type);
 
             if (orig && (type === WIDGET_TYPE || type === SLIDES_WIDGET_TYPE)) {
