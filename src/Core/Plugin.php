@@ -106,7 +106,11 @@ class Plugin
         $result = [];
 
         foreach ($elements as $element) {
-            if (isset($element['elType']) && $element['elType'] === 'widget' && empty($element['widgetType'])) {
+            if (!isset($element['elType'])) {
+                continue;
+            }
+
+            if ($element['elType'] === 'widget' && empty($element['widgetType'])) {
                 continue;
             }
 

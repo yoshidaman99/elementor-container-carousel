@@ -4,11 +4,6 @@ namespace Elementor_Container_Carousel\Elementor\Widgets;
 
 use Elementor\Widget_Base;
 use Elementor\Controls_Manager;
-use Elementor\Group_Control_Typography;
-use Elementor\Group_Control_Border;
-use Elementor\Group_Control_Box_Shadow;
-use Elementor\Core\Kits\Documents\Tabs\Global_Colors;
-use Elementor\Core\Kits\Documents\Tabs\Global_Typography;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -41,18 +36,85 @@ class Container_Carousel_Widget extends Widget_Base
         return ['carousel', 'slider', 'container', 'swipe', 'yosh', 'tools'];
     }
 
-    public function get_child_type(array $element_data): ?\Elementor\Element_Base
-    {
-        return \Elementor\Plugin::instance()->elements_manager->get_element_types('container');
-    }
-
-    public function get_default_children_elements(): array
+    protected function get_default_children_elements(): array
     {
         return [
-            ['elType' => 'container', 'isInner' => false, 'elements' => []],
-            ['elType' => 'container', 'isInner' => false, 'elements' => []],
-            ['elType' => 'container', 'isInner' => false, 'elements' => []],
+            [
+                'elType' => 'container',
+                'isInner' => false,
+                'settings' => [
+                    '_title' => __('Slide #1', 'elementor-container-carousel'),
+                ],
+                'elements' => [],
+            ],
+            [
+                'elType' => 'container',
+                'isInner' => false,
+                'settings' => [
+                    '_title' => __('Slide #2', 'elementor-container-carousel'),
+                ],
+                'elements' => [],
+            ],
+            [
+                'elType' => 'container',
+                'isInner' => false,
+                'settings' => [
+                    '_title' => __('Slide #3', 'elementor-container-carousel'),
+                ],
+                'elements' => [],
+            ],
         ];
+    }
+
+    protected function _get_default_child_type(array $element_data)
+    {
+        if (!isset($element_data['elType'])) {
+            return null;
+        }
+
+        return \Elementor\Plugin::$instance->elements_manager->get_element_types('container');
+    }
+
+    protected function get_initial_config()
+    {
+        $config = parent::get_initial_config();
+
+        $config['support_nesting'] = true;
+        $config['defaults'] = [
+            'elements' => $this->get_default_children_elements(),
+            'elements_title' => __('Slide #%d', 'elementor-container-carousel'),
+            'elements_placeholder_selector' => '.swiper-wrapper',
+            'child_container_placeholder_selector' => '.swiper-wrapper',
+        ];
+
+        return $config;
+    }
+
+    public function get_raw_data($with_html_content = false)
+    {
+        $data = $this->get_data();
+        $elements = [];
+
+        foreach ($this->get_children() as $child) {
+            $elements[] = $child->get_raw_data($with_html_content);
+        }
+
+        return [
+            'id' => $this->get_id(),
+            'elType' => $data['elType'],
+            'widgetType' => $data['widgetType'],
+            'settings' => $data['settings'],
+            'elements' => $elements,
+        ];
+    }
+
+    public function print_child($index)
+    {
+        $children = $this->get_children();
+
+        if (!empty($children[$index])) {
+            $children[$index]->print_element();
+        }
     }
 
     public function get_style_depends(): array
