@@ -189,9 +189,18 @@ class Slides_Carousel_Widget extends Widget_Base
         $this->add_control('slides_per_view', [
             'label'   => __('Slides Per View', 'elementor-container-carousel'),
             'type'    => Controls_Manager::NUMBER,
-            'default' => 1,
+            'default' => 3,
             'min'     => 1,
             'max'     => 10,
+        ]);
+
+        $this->add_control('slides_per_group', [
+            'label'       => __('Slides Per Group', 'elementor-container-carousel'),
+            'type'        => Controls_Manager::NUMBER,
+            'default'     => 1,
+            'min'         => 1,
+            'max'         => 10,
+            'description' => __('Number of slides to move at once. Set to 1 to slide one card at a time, or match Slides Per View to move all visible cards together.', 'elementor-container-carousel'),
         ]);
 
         $this->add_control('space_between', [
@@ -479,6 +488,14 @@ class Slides_Carousel_Widget extends Widget_Base
         $this->add_control('slides_per_view_tablet', [
             'label'   => __('Slides Per View', 'elementor-container-carousel'),
             'type'    => Controls_Manager::NUMBER,
+            'default' => 2,
+            'min'     => 1,
+            'max'     => 10,
+        ]);
+
+        $this->add_control('slides_per_group_tablet', [
+            'label'   => __('Slides Per Group', 'elementor-container-carousel'),
+            'type'    => Controls_Manager::NUMBER,
             'default' => 1,
             'min'     => 1,
             'max'     => 10,
@@ -507,6 +524,14 @@ class Slides_Carousel_Widget extends Widget_Base
 
         $this->add_control('slides_per_view_mobile', [
             'label'   => __('Slides Per View', 'elementor-container-carousel'),
+            'type'    => Controls_Manager::NUMBER,
+            'default' => 1,
+            'min'     => 1,
+            'max'     => 10,
+        ]);
+
+        $this->add_control('slides_per_group_mobile', [
+            'label'   => __('Slides Per Group', 'elementor-container-carousel'),
             'type'    => Controls_Manager::NUMBER,
             'default' => 1,
             'min'     => 1,
@@ -816,7 +841,7 @@ class Slides_Carousel_Widget extends Widget_Base
 
         $config = [
             'slidesPerView'  => (int) $settings['slides_per_view'],
-            'slidesPerGroup' => (int) $settings['slides_per_view'],
+            'slidesPerGroup' => (int) $settings['slides_per_group'],
             'spaceBetween'   => (int) $settings['space_between']['size'],
             'speed'          => (int) $settings['speed']['size'],
             'grabCursor'     => $settings['grab_cursor'] === 'yes',
@@ -838,12 +863,12 @@ class Slides_Carousel_Widget extends Widget_Base
             'breakpoints' => [
                 (int) $settings['mobile_breakpoint'] => [
                     'slidesPerView'  => (int) $settings['slides_per_view_mobile'],
-                    'slidesPerGroup' => (int) $settings['slides_per_view_mobile'],
+                    'slidesPerGroup' => (int) $settings['slides_per_group_mobile'],
                     'spaceBetween'   => (int) $settings['space_between_mobile']['size'],
                 ],
                 (int) $settings['tablet_breakpoint'] => [
                     'slidesPerView'  => (int) $settings['slides_per_view_tablet'],
-                    'slidesPerGroup' => (int) $settings['slides_per_view_tablet'],
+                    'slidesPerGroup' => (int) $settings['slides_per_group_tablet'],
                     'spaceBetween'   => (int) $settings['space_between_tablet']['size'],
                 ],
             ],
