@@ -33,7 +33,9 @@ class Plugin
         add_action('elementor/frontend/after_register_styles', [\Elementor_Container_Carousel\Elementor\Elementor_Integration::class, 'register_styles']);
         add_action('elementor/frontend/after_register_scripts', [\Elementor_Container_Carousel\Elementor\Elementor_Integration::class, 'register_scripts']);
 
-        add_filter('get_post_metadata', [$this, 'filter_elementor_data'], 10, 4);
+        add_filter('get_post_metadata', [$this, 'filter_elementor_data'], 1, 4);
+
+        add_action('wp_enqueue_scripts', [$this, 'fix_corrupt_document_data'], 1);
     }
 
     public function load_textdomain(): void
@@ -88,7 +90,7 @@ class Plugin
 
         $raw_data = get_post_meta($object_id, $meta_key, true);
 
-        add_filter('get_post_metadata', [$this, 'filter_elementor_data'], 10, 4);
+        add_filter('get_post_metadata', [$this, 'filter_elementor_data'], 1, 4);
         self::$filtering = false;
 
         if (!is_array($raw_data)) {
@@ -99,6 +101,53 @@ class Plugin
         self::$sanitized_cache[$object_id] = $cleaned;
 
         return $single ? $cleaned : [$cleaned];
+    }
+
+    public function fix_corrupt_document_data(): void
+    {
+        if (is_admin() || wp_doing_ajax()) {
+            return;
+        }
+
+        if (!class_exists('\Elementor\Plugin')) {
+            return;
+        }
+
+        try {
+            $documents_manager = \Elementor\Plugin::$instance->documents;
+            if (!$documents_manager) {
+                return;
+            }
+
+            $current = $documents_manager->get_current();
+            if (!$current) {
+                return;
+            }
+
+            $post_id = $current->get_main_id();
+            if (!$post_id) {
+                return;
+            }
+
+            if (isset(self::$sanitized_cache[$post_id])) {
+                $clean = self::$sanitized_cache[$post_id];
+            } else {
+                $raw = get_post_meta($post_id, '_elementor_data', true);
+                if (!is_array($raw)) {
+                    return;
+                }
+                $clean = $this->sanitize_elements($raw);
+                self::$sanitized_cache[$post_id] = $clean;
+            }
+
+            if ($raw ?? null !== $clean) {
+                update_post_meta($post_id, '_elementor_data', $clean);
+                wp_cache_delete($post_id, 'post_meta');
+                clean_post_cache($post_id);
+            }
+        } catch (\Throwable $e) {
+            return;
+        }
     }
 
     private function sanitize_elements(array $elements): array
