@@ -58,7 +58,7 @@ class Elementor_Integration
         wp_enqueue_script(
             'ecc-carousel-editor',
             ECC_URL . 'assets/js/editor.js',
-            [],
+            ['elementor-editor'],
             ECC_VERSION,
             true
         );

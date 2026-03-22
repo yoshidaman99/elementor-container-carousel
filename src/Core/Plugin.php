@@ -29,7 +29,7 @@ class Plugin
 
         add_action('elementor/init', [$this, 'register_widget_category'], 5);
         add_action('elementor/widgets/register', [$this, 'register_widgets']);
-        add_action('elementor/editor/before_enqueue_scripts', [\Elementor_Container_Carousel\Elementor\Elementor_Integration::class, 'enqueue_editor_assets']);
+        add_action('elementor/editor/after_enqueue_scripts', [\Elementor_Container_Carousel\Elementor\Elementor_Integration::class, 'enqueue_editor_assets']);
         add_action('elementor/frontend/after_register_styles', [\Elementor_Container_Carousel\Elementor\Elementor_Integration::class, 'register_styles']);
         add_action('elementor/frontend/after_register_scripts', [\Elementor_Container_Carousel\Elementor\Elementor_Integration::class, 'register_scripts']);
     }
