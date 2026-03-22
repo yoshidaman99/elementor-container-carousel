@@ -6,30 +6,82 @@
     }
 
     var WIDGET_TYPE = 'ecc_container_carousel';
+    var SLIDES_WIDGET_TYPE = 'ecc_slides_carousel';
 
-    /**
-     * Add a new container slide to the widget.
-     *
-     * Two guards in Elementor's command pipeline must be bypassed for a
-     * Widget_Base element to accept children:
-     *
-     *   1. document/elements/create → validate()
-     *      Calls container.model.isValidChild(childModel).
-     *      Widget model always returns false → command aborted.
-     *
-     *   2. document/elements/create → apply() → view.addElement()
-     *      Calls this.getChildType() on the view.
-     *      Widget view returns [] → element silently redirected into
-     *      the last existing child instead of added as a sibling.
-     *
-     * We temporarily replace both methods on this specific widget instance
-     * (not on the prototype), run the command, then restore them.
-     * $e.run is synchronous so the finally block runs after the element
-     * has already been created.
-     */
+    // -------------------------------------------------------------------------
+    // Fix ForceMethodImplementation for getEmptyView in Elementor 3.35+.
+    //
+    // Elementor calls getEmptyView() on the *element type class* returned by
+    // elementor.elementsManager.getElementTypeClass(widgetType) — NOT on the
+    // Widget view prototype.  Custom widgets have no registered element type
+    // so they fall back to the generic "widget" base whose getEmptyView()
+    // throws ForceMethodImplementation.
+    //
+    // We monkey-patch getElementTypeClass so it returns a patched object
+    // (that delegates to the original but overrides getEmptyView) for our
+    // widget types.  This must run synchronously before any preview rendering.
+    // -------------------------------------------------------------------------
+    function patchElementsManager() {
+        if (!elementor.elementsManager || !elementor.elementsManager.getElementTypeClass) {
+            return false;
+        }
+
+        var origGetElementTypeClass = elementor.elementsManager.getElementTypeClass;
+        if (origGetElementTypeClass.__eccPatched) {
+            return true;
+        }
+        origGetElementTypeClass.__eccPatched = true;
+
+        elementor.elementsManager.getElementTypeClass = function (type) {
+            var typeClass = origGetElementTypeClass.call(this, type);
+
+            if (type === WIDGET_TYPE || type === SLIDES_WIDGET_TYPE) {
+                if (typeClass && typeof typeClass.getEmptyView === 'function') {
+                    try {
+                        var test = typeClass.getEmptyView();
+                        if (test) {
+                            return typeClass;
+                        }
+                    } catch (e) {
+                        // getEmptyView throws — wrap it
+                    }
+                }
+
+                // Return a proxy that overrides getEmptyView to return null
+                // (null = no empty view React component = no error)
+                var ProxyType = function () {};
+                ProxyType.prototype = typeClass || {};
+                ProxyType.prototype.getEmptyView = function () {
+                    return null;
+                };
+                ProxyType.prototype.getType = function () {
+                    return type;
+                };
+                return new ProxyType();
+            }
+
+            return typeClass;
+        };
+
+        return true;
+    }
+
+    // Try immediately, then poll until Elementor modules are available
+    if (patchElementsManager()) {
+        // already patched
+    } else {
+        var attempts = 0;
+        var iv = setInterval(function () {
+            if (patchElementsManager() || ++attempts > 500) {
+                clearInterval(iv);
+            }
+        }, 10);
+    }
+
+    // -------------------------------------------------------------------------
+    // Add a new container slide to the widget.
+    // -------------------------------------------------------------------------
     elementor.channels.editor.on('ecc:addSlide', function (view) {
-        // view.options.container is a lazy getter that resolves to the
-        // Container object of the element currently open in the panel.
         var container = view && view.options && view.options.container;
 
         if (!container) {
@@ -42,11 +94,9 @@
             return;
         }
 
-        // Stash originals so we can restore them after the command.
-        var origIsValidChild  = container.model.isValidChild;
-        var origGetChildType  = container.view.getChildType;
+        var origIsValidChild = container.model.isValidChild;
+        var origGetChildType = container.view.getChildType;
 
-        // Patch 1 – bypass validate().
         container.model.isValidChild = function (childModel) {
             var elType = childModel && (
                 typeof childModel.get === 'function'
@@ -56,7 +106,6 @@
             return elType === 'container';
         };
 
-        // Patch 2 – bypass the childTypes check inside view.addElement().
         container.view.getChildType = function () {
             return ['container'];
         };
@@ -65,77 +114,23 @@
             $e.run('document/elements/create', {
                 container: container,
                 model: {
-                    elType:    'container',
-                    settings:  {},
+                    elType: 'container',
+                    settings: {},
                 },
                 options: {
-                    edit: false,   // Don't auto-open the new slide's panel.
+                    edit: false,
                 },
             });
         } catch (e) {
             // Swallow – already logged by Elementor's command system.
         } finally {
-            // Restore both methods immediately after the synchronous command.
             container.model.isValidChild = origIsValidChild;
-            container.view.getChildType  = origGetChildType;
+            container.view.getChildType = origGetChildType;
         }
     });
 
     // -------------------------------------------------------------------------
-    // Patch the JS Widget view for our widget type so Elementor 3.35+ doesn't
-    // throw ForceMethodImplementation when the widget has no children.
-    //
-    // The rendering chain (onPreviewLoaded → Promise.then → renderPreview)
-    // runs as a microtask that completes BEFORE any setTimeout macrotask fires.
-    // We must patch the prototype synchronously during elementor.init (well
-    // before preview:loaded) using an aggressive polling loop.
-    // -------------------------------------------------------------------------
-    (function patchGetEmptyView() {
-        var patched = false;
-
-        function doPatch() {
-            try {
-                var views = elementor.modules && elementor.modules.elements
-                    && elementor.modules.elements.views;
-                if (!views || !views.Widget || views.Widget.prototype.__eccPatched) {
-                    return !!views && !!views.Widget;
-                }
-                views.Widget.prototype.__eccPatched = true;
-
-                var origGetEmptyView = views.Widget.prototype.getEmptyView;
-                views.Widget.prototype.getEmptyView = function () {
-                    var widgetType = this.model && this.model.get
-                        && this.model.get('widgetType');
-                    if (widgetType === WIDGET_TYPE) {
-                        return {
-                            title: 'Container Carousel',
-                            description: 'Drag containers here to create carousel slides.',
-                            icon: 'eicon-slider-push',
-                        };
-                    }
-                    if (typeof origGetEmptyView === 'function') {
-                        try { return origGetEmptyView.call(this); }
-                        catch (e) { return {}; }
-                    }
-                    return {};
-                };
-                return true;
-            } catch (e) { return false; }
-        }
-
-        if (doPatch()) { return; }
-
-        var attempts = 0;
-        var iv = setInterval(function () {
-            if (doPatch() || ++attempts > 500) {
-                clearInterval(iv);
-            }
-        }, 10);
-    })();
-
-    // -------------------------------------------------------------------------
-    // Inject editor-only styles into the preview iframe so child containers
-    // don't collapse to a zero-height bar in the canvas.
+    // Inject editor-only styles into the preview iframe.
     // -------------------------------------------------------------------------
     function getPreviewDocument() {
         if (elementor.$preview && elementor.$preview[0]) {
@@ -159,8 +154,6 @@
         }
         var style = previewDoc.createElement('style');
         style.id = 'ecc-editor-styles';
-        // In the editor carousel.min.js never runs, so children don't get
-        // swiper-slide/ecc-slide classes. Target the raw Elementor elements.
         style.textContent =
             '.elementor-widget-' + WIDGET_TYPE + ' .ecc-swiper-container {' +
             '  min-height: 120px;' +
