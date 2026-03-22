@@ -157,16 +157,6 @@ class Container_Carousel_Widget extends Widget_Base
             'separator'   => 'after',
         ]);
 
-        $this->add_control('slides_per_group', [
-            'label'       => __('Slides Per Group', 'elementor-container-carousel'),
-            'type'        => Controls_Manager::NUMBER,
-            'default'     => 1,
-            'min'         => 1,
-            'max'         => 10,
-            'step'        => 1,
-            'description' => __('Number of slides to group when navigating.', 'elementor-container-carousel'),
-        ]);
-
         $this->add_control('space_between', [
             'label'   => __('Space Between (px)', 'elementor-container-carousel'),
             'type'    => Controls_Manager::SLIDER,
@@ -788,7 +778,7 @@ class Container_Carousel_Widget extends Widget_Base
 
         $config = [
             'slidesPerView'  => (int) $settings['slides_per_view_desktop'],
-            'slidesPerGroup' => (int) $settings['slides_per_group'],
+            'slidesPerGroup' => (int) $settings['slides_per_view_desktop'],
             'spaceBetween'   => (int) $settings['space_between']['size'],
             'speed'          => (int) $settings['speed']['size'],
             'direction'      => $settings['direction'],
@@ -816,12 +806,14 @@ class Container_Carousel_Widget extends Widget_Base
             ],
             'breakpoints' => [
                 (int) $settings['mobile_breakpoint'] => [
-                    'slidesPerView' => (int) $settings['slides_per_view_mobile'],
-                    'spaceBetween'  => (int) $settings['space_between_mobile']['size'],
+                    'slidesPerView'  => (int) $settings['slides_per_view_mobile'],
+                    'slidesPerGroup' => (int) $settings['slides_per_view_mobile'],
+                    'spaceBetween'   => (int) $settings['space_between_mobile']['size'],
                 ],
                 (int) $settings['tablet_breakpoint'] => [
-                    'slidesPerView' => (int) $settings['slides_per_view_tablet'],
-                    'spaceBetween'  => (int) $settings['space_between_tablet']['size'],
+                    'slidesPerView'  => (int) $settings['slides_per_view_tablet'],
+                    'slidesPerGroup' => (int) $settings['slides_per_view_tablet'],
+                    'spaceBetween'   => (int) $settings['space_between_tablet']['size'],
                 ],
             ],
         ];
@@ -936,10 +928,10 @@ class Container_Carousel_Widget extends Widget_Base
                 <div class="swiper-pagination ecc-pagination-<?php echo esc_attr($id); ?>"></div>
             <?php endif; ?>
             <?php if ($settings['show_navigation'] === 'yes') : ?>
-                <div class="ecc-nav-button ecc-nav-prev-<?php echo esc_attr($id); ?>">
+                <div class="ecc-nav-button ecc-nav-prev ecc-nav-prev-<?php echo esc_attr($id); ?>">
                     <?php \Elementor\Icons_Manager::render_icon($settings['nav_prev_icon'], ['aria-hidden' => 'true']); ?>
                 </div>
-                <div class="ecc-nav-button ecc-nav-next-<?php echo esc_attr($id); ?>">
+                <div class="ecc-nav-button ecc-nav-next ecc-nav-next-<?php echo esc_attr($id); ?>">
                     <?php \Elementor\Icons_Manager::render_icon($settings['nav_next_icon'], ['aria-hidden' => 'true']); ?>
                 </div>
             <?php endif; ?>
@@ -958,12 +950,12 @@ class Container_Carousel_Widget extends Widget_Base
                 <div class="swiper-pagination ecc-pagination-{{ view.getID() }}"></div>
             <# } #>
             <# if (settings.show_navigation === 'yes') { #>
-                <div class="ecc-nav-button ecc-nav-prev-{{ view.getID() }}">
+                <div class="ecc-nav-button ecc-nav-prev ecc-nav-prev-{{ view.getID() }}">
                     <# if (settings.nav_prev_icon && settings.nav_prev_icon.value) { #>
                         <i class="{{ settings.nav_prev_icon.value }}"></i>
                     <# } #>
                 </div>
-                <div class="ecc-nav-button ecc-nav-next-{{ view.getID() }}">
+                <div class="ecc-nav-button ecc-nav-next ecc-nav-next-{{ view.getID() }}">
                     <# if (settings.nav_next_icon && settings.nav_next_icon.value) { #>
                         <i class="{{ settings.nav_next_icon.value }}"></i>
                     <# } #>

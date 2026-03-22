@@ -465,20 +465,61 @@ class Slides_Carousel_Widget extends Widget_Base
             'tab'   => Controls_Manager::TAB_CONTENT,
         ]);
 
+        $this->add_control('tablet_breakpoint', [
+            'label'     => __('Tablet Breakpoint (px)', 'elementor-container-carousel'),
+            'type'      => Controls_Manager::NUMBER,
+            'default'   => 1024,
+        ]);
+
+        $this->add_control('tablet_heading', [
+            'label' => __('Tablet', 'elementor-container-carousel'),
+            'type'  => Controls_Manager::HEADING,
+        ]);
+
         $this->add_control('slides_per_view_tablet', [
-            'label'   => __('Tablet Slides Per View', 'elementor-container-carousel'),
+            'label'   => __('Slides Per View', 'elementor-container-carousel'),
             'type'    => Controls_Manager::NUMBER,
             'default' => 1,
             'min'     => 1,
             'max'     => 10,
         ]);
 
+        $this->add_control('space_between_tablet', [
+            'label'   => __('Space Between (px)', 'elementor-container-carousel'),
+            'type'    => Controls_Manager::SLIDER,
+            'default' => ['size' => 0],
+            'range'   => [
+                'px' => ['min' => 0, 'max' => 100, 'step' => 5],
+            ],
+        ]);
+
+        $this->add_control('mobile_breakpoint', [
+            'label'     => __('Mobile Breakpoint (px)', 'elementor-container-carousel'),
+            'type'      => Controls_Manager::NUMBER,
+            'default'   => 767,
+            'separator' => 'before',
+        ]);
+
+        $this->add_control('mobile_heading', [
+            'label' => __('Mobile', 'elementor-container-carousel'),
+            'type'  => Controls_Manager::HEADING,
+        ]);
+
         $this->add_control('slides_per_view_mobile', [
-            'label'   => __('Mobile Slides Per View', 'elementor-container-carousel'),
+            'label'   => __('Slides Per View', 'elementor-container-carousel'),
             'type'    => Controls_Manager::NUMBER,
             'default' => 1,
             'min'     => 1,
             'max'     => 10,
+        ]);
+
+        $this->add_control('space_between_mobile', [
+            'label'   => __('Space Between (px)', 'elementor-container-carousel'),
+            'type'    => Controls_Manager::SLIDER,
+            'default' => ['size' => 0],
+            'range'   => [
+                'px' => ['min' => 0, 'max' => 100, 'step' => 5],
+            ],
         ]);
 
         $this->end_controls_section();
@@ -775,6 +816,7 @@ class Slides_Carousel_Widget extends Widget_Base
 
         $config = [
             'slidesPerView'  => (int) $settings['slides_per_view'],
+            'slidesPerGroup' => (int) $settings['slides_per_view'],
             'spaceBetween'   => (int) $settings['space_between']['size'],
             'speed'          => (int) $settings['speed']['size'],
             'grabCursor'     => $settings['grab_cursor'] === 'yes',
@@ -794,11 +836,15 @@ class Slides_Carousel_Widget extends Widget_Base
                 'dynamicBullets' => $settings['dynamic_bullets'] === 'yes',
             ],
             'breakpoints' => [
-                767 => [
-                    'slidesPerView' => (int) $settings['slides_per_view_mobile'],
+                (int) $settings['mobile_breakpoint'] => [
+                    'slidesPerView'  => (int) $settings['slides_per_view_mobile'],
+                    'slidesPerGroup' => (int) $settings['slides_per_view_mobile'],
+                    'spaceBetween'   => (int) $settings['space_between_mobile']['size'],
                 ],
-                1024 => [
-                    'slidesPerView' => (int) $settings['slides_per_view_tablet'],
+                (int) $settings['tablet_breakpoint'] => [
+                    'slidesPerView'  => (int) $settings['slides_per_view_tablet'],
+                    'slidesPerGroup' => (int) $settings['slides_per_view_tablet'],
+                    'spaceBetween'   => (int) $settings['space_between_tablet']['size'],
                 ],
             ],
         ];
@@ -947,10 +993,10 @@ class Slides_Carousel_Widget extends Widget_Base
                 <div class="swiper-pagination ecc-pagination-<?php echo esc_attr($id); ?>"></div>
             <?php endif; ?>
             <?php if ($settings['show_navigation'] === 'yes') : ?>
-                <div class="ecc-nav-button ecc-nav-prev-<?php echo esc_attr($id); ?>">
+                <div class="ecc-nav-button ecc-nav-prev ecc-nav-prev-<?php echo esc_attr($id); ?>">
                     <?php \Elementor\Icons_Manager::render_icon($settings['nav_prev_icon'], ['aria-hidden' => 'true']); ?>
                 </div>
-                <div class="ecc-nav-button ecc-nav-next-<?php echo esc_attr($id); ?>">
+                <div class="ecc-nav-button ecc-nav-next ecc-nav-next-<?php echo esc_attr($id); ?>">
                     <?php \Elementor\Icons_Manager::render_icon($settings['nav_next_icon'], ['aria-hidden' => 'true']); ?>
                 </div>
             <?php endif; ?>
@@ -994,12 +1040,12 @@ class Slides_Carousel_Widget extends Widget_Base
                 <div class="swiper-pagination ecc-pagination-{{ view.getID() }}"></div>
             <# } #>
             <# if (settings.show_navigation === 'yes') { #>
-                <div class="ecc-nav-button ecc-nav-prev-{{ view.getID() }}">
+                <div class="ecc-nav-button ecc-nav-prev ecc-nav-prev-{{ view.getID() }}">
                     <# if (settings.nav_prev_icon && settings.nav_prev_icon.value) { #>
                         <i class="{{ settings.nav_prev_icon.value }}"></i>
                     <# } #>
                 </div>
-                <div class="ecc-nav-button ecc-nav-next-{{ view.getID() }}">
+                <div class="ecc-nav-button ecc-nav-next ecc-nav-next-{{ view.getID() }}">
                     <# if (settings.nav_next_icon && settings.nav_next_icon.value) { #>
                         <i class="{{ settings.nav_next_icon.value }}"></i>
                     <# } #>
