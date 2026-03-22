@@ -56,6 +56,11 @@ class Container_Carousel_Widget extends Widget_Base
         return \Elementor\Plugin::instance()->elements_manager->get_element_types('container');
     }
 
+    public function getEmptyView(): string
+    {
+        return __('Drag containers here to create carousel slides.', 'elementor-container-carousel');
+    }
+
     public function get_default_children_elements(): array
     {
         return [
