@@ -938,8 +938,8 @@ class Container_Carousel_Widget extends Widget_Base
             'data-swiper'   => wp_json_encode($config),
             'data-widget-id' => $id,
         ]);
-
-        $this->add_render_attribute('wrapper', [
+        ?>
+        <div <?php echo $this->get_render_attribute_string('wrapper'); ?>>
             <div class="swiper-wrapper ecc-slides-wrapper ecc-slide-wrapper">
                 <?php
                 foreach ($this->get_children() as $child) {
