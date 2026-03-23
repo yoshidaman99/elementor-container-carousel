@@ -187,7 +187,7 @@ class Slides_Carousel_Widget extends Widget_Base
         ]);
 
         $this->add_control('slides_per_view', [
-            'label'   => __('Slides Per View', 'elementor-container-carousel'),
+            'label'   => __('Desktop Cards', 'elementor-container-carousel'),
             'type'    => Controls_Manager::NUMBER,
             'default' => 3,
             'min'     => 1,
@@ -195,12 +195,12 @@ class Slides_Carousel_Widget extends Widget_Base
         ]);
 
         $this->add_control('slides_per_group', [
-            'label'       => __('Slides Per Group', 'elementor-container-carousel'),
+            'label'       => __('Desktop Cards to Slide', 'elementor-container-carousel'),
             'type'        => Controls_Manager::NUMBER,
             'default'     => 1,
             'min'         => 1,
             'max'         => 10,
-            'description' => __('Number of slides to move at once. Set to 1 to slide one card at a time, or match Slides Per View to move all visible cards together.', 'elementor-container-carousel'),
+            'description' => __('Number of slides to move at once. Set to 1 to slide one card at a time, or match Desktop Cards to move all visible cards together.', 'elementor-container-carousel'),
         ]);
 
         $this->add_control('space_between', [
@@ -486,7 +486,7 @@ class Slides_Carousel_Widget extends Widget_Base
         ]);
 
         $this->add_control('slides_per_view_tablet', [
-            'label'   => __('Slides Per View', 'elementor-container-carousel'),
+            'label'   => __('Tablet Cards', 'elementor-container-carousel'),
             'type'    => Controls_Manager::NUMBER,
             'default' => 2,
             'min'     => 1,
@@ -494,7 +494,7 @@ class Slides_Carousel_Widget extends Widget_Base
         ]);
 
         $this->add_control('slides_per_group_tablet', [
-            'label'   => __('Slides Per Group', 'elementor-container-carousel'),
+            'label'   => __('Tablet Cards to Slide', 'elementor-container-carousel'),
             'type'    => Controls_Manager::NUMBER,
             'default' => 1,
             'min'     => 1,
@@ -523,7 +523,7 @@ class Slides_Carousel_Widget extends Widget_Base
         ]);
 
         $this->add_control('slides_per_view_mobile', [
-            'label'   => __('Slides Per View', 'elementor-container-carousel'),
+            'label'   => __('Mobile Cards', 'elementor-container-carousel'),
             'type'    => Controls_Manager::NUMBER,
             'default' => 1,
             'min'     => 1,
@@ -531,7 +531,7 @@ class Slides_Carousel_Widget extends Widget_Base
         ]);
 
         $this->add_control('slides_per_group_mobile', [
-            'label'   => __('Slides Per Group', 'elementor-container-carousel'),
+            'label'   => __('Mobile Cards to Slide', 'elementor-container-carousel'),
             'type'    => Controls_Manager::NUMBER,
             'default' => 1,
             'min'     => 1,
@@ -1032,7 +1032,64 @@ class Slides_Carousel_Widget extends Widget_Base
     protected function content_template(): void
     {
         ?>
-        <div class="ecc-swiper-container swiper" data-swiper="" data-widget-id="{{ view.getID() }}">
+        <#
+        var eccConfig = {
+            slidesPerView: parseInt(settings.slides_per_view) || 1,
+            slidesPerGroup: parseInt(settings.slides_per_group) || 1,
+            spaceBetween: parseInt(settings.space_between.size) || 0,
+            speed: parseInt(settings.speed.size) || 300,
+            grabCursor: settings.grab_cursor === 'yes',
+            loop: settings.loop === 'yes',
+            centeredSlides: settings.centered_slides === 'yes',
+            keyboard: { enabled: settings.keyboard === 'yes', onlyInViewport: true },
+            breakpoints: {}
+        };
+
+        var eccMb = parseInt(settings.mobile_breakpoint) || 767;
+        var eccTb = parseInt(settings.tablet_breakpoint) || 1024;
+
+        eccConfig.breakpoints[eccMb] = {
+            slidesPerView: parseInt(settings.slides_per_view_mobile) || 1,
+            slidesPerGroup: parseInt(settings.slides_per_group_mobile) || 1,
+            spaceBetween: parseInt(settings.space_between_mobile.size) || 0,
+        };
+        eccConfig.breakpoints[eccTb] = {
+            slidesPerView: parseInt(settings.slides_per_view_tablet) || 1,
+            slidesPerGroup: parseInt(settings.slides_per_group_tablet) || 1,
+            spaceBetween: parseInt(settings.space_between_tablet.size) || 0,
+        };
+
+        if (settings.show_navigation === 'yes') {
+            eccConfig.navigation = {
+                nextEl: '.ecc-nav-next-' + view.getID(),
+                prevEl: '.ecc-nav-prev-' + view.getID(),
+            };
+        }
+        if (settings.show_pagination === 'yes') {
+            eccConfig.pagination = {
+                el: '.ecc-pagination-' + view.getID(),
+                clickable: settings.clickable_pagination === 'yes',
+                dynamicBullets: settings.dynamic_bullets === 'yes',
+            };
+            if (settings.pagination_type) eccConfig.pagination.type = settings.pagination_type;
+        }
+        if (settings.autoplay === 'yes') {
+            eccConfig.autoplay = {
+                delay: parseInt(settings.autoplay_delay.size) || 3000,
+                disableOnInteraction: settings.disable_on_interaction === 'yes',
+                pauseOnMouseEnter: settings.pause_on_hover === 'yes',
+            };
+        }
+        if (settings.effect && settings.effect !== 'slide') {
+            eccConfig.effect = settings.effect;
+            if (settings.effect === 'coverflow') {
+                eccConfig.coverflowEffect = { rotate: parseInt(settings.coverflow_rotate.size)||0, stretch: parseInt(settings.coverflow_stretch.size)||0, depth: parseInt(settings.coverflow_depth.size)||0, modifier: 1, slideShadows: true };
+            }
+            if (settings.effect === 'cube') { eccConfig.cubeEffect = { shadow: settings.cube_shadow==='yes', slideShadows: true, shadowOffset: 20, shadowScale: 0.94 }; }
+            if (settings.effect === 'fade') { eccConfig.fadeEffect = { crossFade: true }; }
+        }
+        #>
+        <div class="ecc-swiper-container swiper" data-swiper="{{ JSON.stringify(eccConfig) }}" data-widget-id="{{ view.getID() }}">
             <div class="swiper-wrapper">
                 <# if (settings.slides_list) { #>
                     <# _.each(settings.slides_list, function(slide, index) { #>

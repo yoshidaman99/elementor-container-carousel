@@ -197,11 +197,36 @@
         }).observe(previewDoc.body, { childList: true, subtree: true });
     }
 
+    function initEditorSwipers() {
+        var previewDoc = getPreviewDocument();
+        if (!previewDoc || !previewDoc.body) {
+            return;
+        }
+
+        var previewWindow = previewDoc.defaultView || previewDoc.parentWindow;
+        if (!previewWindow || !previewWindow.Swiper) {
+            return;
+        }
+
+        previewDoc.querySelectorAll('.ecc-swiper-container[data-swiper]').forEach(function (container) {
+            var configStr = container.getAttribute('data-swiper');
+            if (!configStr || container._eccSwiper) {
+                return;
+            }
+
+            try {
+                var config = JSON.parse(configStr);
+                container._eccSwiper = new previewWindow.Swiper(container, config);
+            } catch (e) { }
+        });
+    }
+
     elementor.on('preview:loaded', function () {
         setTimeout(function () {
             injectEditorStyles();
             patchSlideClasses();
             observeSlideClasses();
+            initEditorSwipers();
         }, 300);
     });
 
@@ -210,7 +235,46 @@
             injectEditorStyles();
             patchSlideClasses();
             observeSlideClasses();
+            initEditorSwipers();
         }, 300);
+    });
+
+    function observeEditorSwipers() {
+        var previewDoc = getPreviewDocument();
+        if (!previewDoc || !previewDoc.body || !window.MutationObserver) {
+            return;
+        }
+
+        if (previewDoc.getElementById('ecc-swiper-observer-active')) {
+            return;
+        }
+
+        var marker = previewDoc.createElement('meta');
+        marker.id = 'ecc-swiper-observer-active';
+        previewDoc.head.appendChild(marker);
+
+        new MutationObserver(function (mutations) {
+            var needsInit = false;
+            for (var i = 0; i < mutations.length; i++) {
+                if (mutations[i].addedNodes.length > 0) {
+                    needsInit = true;
+                    break;
+                }
+            }
+            if (needsInit) {
+                setTimeout(function () {
+                    patchSlideClasses();
+                    initEditorSwipers();
+                }, 50);
+            }
+        }).observe(previewDoc.body, { childList: true, subtree: true });
+    }
+
+    elementor.on('preview:loaded', function () {
+        setTimeout(observeEditorSwipers, 500);
+    });
+    elementor.on('preview:afterLoading', function () {
+        setTimeout(observeEditorSwipers, 500);
     });
 
 })();
