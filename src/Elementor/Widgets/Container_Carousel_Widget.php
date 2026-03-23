@@ -802,7 +802,7 @@ class Container_Carousel_Widget extends Widget_Base
         $settings = $this->get_settings_for_display();
 
         $config = [
-            'slidesPerView'  => 'auto',
+            'slidesPerView'  => (int) $settings['slides_per_view_desktop'],
             'slidesPerGroup' => (int) $settings['slides_per_group_desktop'],
             'spaceBetween'   => (int) $settings['space_between']['size'],
             'speed'          => (int) $settings['speed']['size'],
@@ -831,12 +831,12 @@ class Container_Carousel_Widget extends Widget_Base
             ],
             'breakpoints' => [
                 (int) $settings['mobile_breakpoint'] => [
-                    'slidesPerView'  => 'auto',
+                    'slidesPerView'  => (int) $settings['slides_per_view_mobile'],
                     'slidesPerGroup' => (int) $settings['slides_per_group_mobile'],
                     'spaceBetween'   => (int) $settings['space_between_mobile']['size'],
                 ],
                 (int) $settings['tablet_breakpoint'] => [
-                    'slidesPerView'  => 'auto',
+                    'slidesPerView'  => (int) $settings['slides_per_view_tablet'],
                     'slidesPerGroup' => (int) $settings['slides_per_group_tablet'],
                     'spaceBetween'   => (int) $settings['space_between_tablet']['size'],
                 ],
@@ -939,25 +939,7 @@ class Container_Carousel_Widget extends Widget_Base
             'data-widget-id' => $id,
         ]);
 
-        $d = (int) $settings['slides_per_view_desktop'];
-        $t = (int) $settings['slides_per_view_tablet'];
-        $m = (int) $settings['slides_per_view_mobile'];
-        $dg = (int) $settings['space_between']['size'];
-        $tg = (int) $settings['space_between_tablet']['size'];
-        $mg = (int) $settings['space_between_mobile']['size'];
-        $tb = (int) $settings['tablet_breakpoint'];
-        $mb = (int) $settings['mobile_breakpoint'];
-
-        $style_id = 'ecc-carousel-' . $id;
-        ?>
-        <style id="<?php echo esc_attr($style_id); ?>">
-            #<?php echo esc_attr($id); ?> .swiper-slide { width: calc((100% - <?php echo ($d - 1) * $dg; ?>px) / <?php echo $d; ?>) !important; }
-            @media (max-width: <?php echo $tb; ?>px) { #<?php echo esc_attr($id); ?> .swiper-slide { width: calc((100% - <?php echo ($t - 1) * $tg; ?>px) / <?php echo $t; ?>) !important; } }
-            @media (max-width: <?php echo $mb; ?>px) { #<?php echo esc_attr($id); ?> .swiper-slide { width: calc((100% - <?php echo ($m - 1) * $mg; ?>px) / <?php echo $m; ?>) !important; } }
-        </style>
-
-        ?>
-        <div <?php echo $this->get_render_attribute_string('wrapper'); ?>>
+        $this->add_render_attribute('wrapper', [
             <div class="swiper-wrapper ecc-slides-wrapper ecc-slide-wrapper">
                 <?php
                 foreach ($this->get_children() as $child) {
@@ -995,7 +977,7 @@ class Container_Carousel_Widget extends Widget_Base
         var eccBpMb = parseInt(settings.mobile_breakpoint) || 767;
 
         var eccConfig = {
-            slidesPerView: 'auto',
+            slidesPerView: eccD,
             slidesPerGroup: parseInt(settings.slides_per_group_desktop) || 1,
             spaceBetween: eccDg,
             speed: parseInt(settings.speed.size) || 300,
@@ -1010,12 +992,12 @@ class Container_Carousel_Widget extends Widget_Base
         };
 
         eccConfig.breakpoints[eccBpMb] = {
-            slidesPerView: 'auto',
+            slidesPerView: eccM,
             slidesPerGroup: parseInt(settings.slides_per_group_mobile) || 1,
             spaceBetween: eccMg,
         };
         eccConfig.breakpoints[eccBpTb] = {
-            slidesPerView: 'auto',
+            slidesPerView: eccT,
             slidesPerGroup: parseInt(settings.slides_per_group_tablet) || 1,
             spaceBetween: eccTg,
         };
@@ -1051,11 +1033,6 @@ class Container_Carousel_Widget extends Widget_Base
         }
         if (settings.mousewheel !== 'yes') { delete eccConfig.mousewheel; }
         #>
-        <style>
-            #elementor-widget-{{ view.getID() }} .swiper-slide { width: calc((100% - {{ (eccD - 1) * eccDg }}px) / {{ eccD }}) !important; }
-            @media (max-width: {{ eccBpTb }}px) { #elementor-widget-{{ view.getID() }} .swiper-slide { width: calc((100% - {{ (eccT - 1) * eccTg }}px) / {{ eccT }}) !important; } }
-            @media (max-width: {{ eccBpMb }}px) { #elementor-widget-{{ view.getID() }} .swiper-slide { width: calc((100% - {{ (eccM - 1) * eccMg }}px) / {{ eccM }}) !important; } }
-        </style>
         <div class="ecc-swiper-container swiper" data-swiper="{{ JSON.stringify(eccConfig) }}" data-widget-id="{{ view.getID() }}">
             <div class="swiper-wrapper ecc-slides-wrapper ecc-slide-wrapper">
                 <slot></slot>
