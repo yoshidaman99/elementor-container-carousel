@@ -840,9 +840,9 @@ class Slides_Carousel_Widget extends Widget_Base
         $settings = $this->get_settings_for_display();
 
         $config = [
-            'slidesPerView'  => (int) $settings['slides_per_view'],
-            'slidesPerGroup' => (int) $settings['slides_per_group'],
-            'spaceBetween'   => (int) $settings['space_between']['size'],
+            'slidesPerView'  => (int) $settings['slides_per_view_mobile'],
+            'slidesPerGroup' => (int) $settings['slides_per_group_mobile'],
+            'spaceBetween'   => (int) $settings['space_between_mobile']['size'],
             'speed'          => (int) $settings['speed']['size'],
             'grabCursor'     => $settings['grab_cursor'] === 'yes',
             'loop'           => $settings['loop'] === 'yes',
@@ -861,15 +861,15 @@ class Slides_Carousel_Widget extends Widget_Base
                 'dynamicBullets' => $settings['dynamic_bullets'] === 'yes',
             ],
             'breakpoints' => [
-                (int) $settings['tablet_breakpoint'] => [
+                ((int) $settings['mobile_breakpoint'] + 1) => [
                     'slidesPerView'  => (int) $settings['slides_per_view_tablet'],
                     'slidesPerGroup' => (int) $settings['slides_per_group_tablet'],
                     'spaceBetween'   => (int) $settings['space_between_tablet']['size'],
                 ],
-                (int) $settings['mobile_breakpoint'] => [
-                    'slidesPerView'  => (int) $settings['slides_per_view_mobile'],
-                    'slidesPerGroup' => (int) $settings['slides_per_group_mobile'],
-                    'spaceBetween'   => (int) $settings['space_between_mobile']['size'],
+                ((int) $settings['tablet_breakpoint'] + 1) => [
+                    'slidesPerView'  => (int) $settings['slides_per_view'],
+                    'slidesPerGroup' => (int) $settings['slides_per_group'],
+                    'spaceBetween'   => (int) $settings['space_between']['size'],
                 ],
             ],
         ];
@@ -1042,9 +1042,9 @@ class Slides_Carousel_Widget extends Widget_Base
         var eccBpMb = parseInt(settings.mobile_breakpoint) || 767;
 
         var eccConfig = {
-            slidesPerView: eccD,
-            slidesPerGroup: parseInt(settings.slides_per_group) || 1,
-            spaceBetween: eccDg,
+            slidesPerView: eccM,
+            slidesPerGroup: parseInt(settings.slides_per_group_mobile) || 1,
+            spaceBetween: eccMg,
             speed: parseInt(settings.speed.size) || 300,
             grabCursor: settings.grab_cursor === 'yes',
             loop: settings.loop === 'yes',
@@ -1053,15 +1053,15 @@ class Slides_Carousel_Widget extends Widget_Base
             breakpoints: {}
         };
 
-        eccConfig.breakpoints[eccBpTb] = {
+        eccConfig.breakpoints[eccBpMb + 1] = {
             slidesPerView: eccT,
             slidesPerGroup: parseInt(settings.slides_per_group_tablet) || 1,
             spaceBetween: eccTg,
         };
-        eccConfig.breakpoints[eccBpMb] = {
-            slidesPerView: eccM,
-            slidesPerGroup: parseInt(settings.slides_per_group_mobile) || 1,
-            spaceBetween: eccMg,
+        eccConfig.breakpoints[eccBpTb + 1] = {
+            slidesPerView: eccD,
+            slidesPerGroup: parseInt(settings.slides_per_group) || 1,
+            spaceBetween: eccDg,
         };
 
         if (settings.show_navigation === 'yes') {
