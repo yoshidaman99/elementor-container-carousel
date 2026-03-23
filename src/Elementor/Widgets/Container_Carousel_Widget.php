@@ -830,15 +830,15 @@ class Container_Carousel_Widget extends Widget_Base
                 'dynamicBullets' => $settings['dynamic_bullets'] === 'yes',
             ],
             'breakpoints' => [
-                (int) $settings['mobile_breakpoint'] => [
-                    'slidesPerView'  => (int) $settings['slides_per_view_mobile'],
-                    'slidesPerGroup' => (int) $settings['slides_per_group_mobile'],
-                    'spaceBetween'   => (int) $settings['space_between_mobile']['size'],
-                ],
                 (int) $settings['tablet_breakpoint'] => [
                     'slidesPerView'  => (int) $settings['slides_per_view_tablet'],
                     'slidesPerGroup' => (int) $settings['slides_per_group_tablet'],
                     'spaceBetween'   => (int) $settings['space_between_tablet']['size'],
+                ],
+                (int) $settings['mobile_breakpoint'] => [
+                    'slidesPerView'  => (int) $settings['slides_per_view_mobile'],
+                    'slidesPerGroup' => (int) $settings['slides_per_group_mobile'],
+                    'spaceBetween'   => (int) $settings['space_between_mobile']['size'],
                 ],
             ],
         ];
@@ -991,15 +991,15 @@ class Container_Carousel_Widget extends Widget_Base
             breakpoints: {}
         };
 
-        eccConfig.breakpoints[eccBpMb] = {
-            slidesPerView: eccM,
-            slidesPerGroup: parseInt(settings.slides_per_group_mobile) || 1,
-            spaceBetween: eccMg,
-        };
         eccConfig.breakpoints[eccBpTb] = {
             slidesPerView: eccT,
             slidesPerGroup: parseInt(settings.slides_per_group_tablet) || 1,
             spaceBetween: eccTg,
+        };
+        eccConfig.breakpoints[eccBpMb] = {
+            slidesPerView: eccM,
+            slidesPerGroup: parseInt(settings.slides_per_group_mobile) || 1,
+            spaceBetween: eccMg,
         };
 
         if (settings.show_navigation === 'yes') {
